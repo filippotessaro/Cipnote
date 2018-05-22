@@ -204,7 +204,7 @@ public class PhotoActivity extends AppCompatActivity
         }
 
         @Override
-        protected void onPostExecute(String result) {
+        protected void onPostExecute(final String result) {
 
             activeCameraCapture();
 
@@ -214,15 +214,13 @@ public class PhotoActivity extends AppCompatActivity
                 @Override
                 public void run() {
 
-                    Intent mIntent = new Intent(PhotoActivity.this, PhotoRedirectActivity.class);
-                    mIntent.putExtra("PATH", tempFile.toString());
-                    mIntent.putExtra("THUMB", tempFile.toString());
-                    mIntent.putExtra("WHO", "Image");
-                    startActivity(mIntent);
+                    Intent intent = new Intent();
+                    intent.putExtra("photoUrl", result);
+                    setResult(RESULT_OK, intent);
+                    finish();
 
                 }
-            }, 100);
-
+            }, 50);
 
         }
     }

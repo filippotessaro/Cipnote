@@ -10,6 +10,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.PointF;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
@@ -23,6 +24,7 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 
 import com.cipnote.camera.CameraPermissionActivity;
+import com.cipnote.camera.PhotoActivity;
 import com.cipnote.camera.RunTimePermission;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -51,6 +53,8 @@ import com.flask.colorpicker.builder.ColorPickerClickListener;
 import com.flask.colorpicker.builder.ColorPickerDialogBuilder;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.util.List;
 import java.util.UUID;
 
@@ -79,6 +83,8 @@ public class NoteActivity extends AppCompatActivity
     private static final String TAG = "MyActivity";
 
     public static final int SELECT_STICKER_REQUEST_CODE = 123;
+    public static final int PHOTO_REQUEST_CODE = 124;
+
 
     //Array di interi contenente i colori di sfondo
     private Integer colorIndex = 0;//Indice per tenere salvato il colore attuale
@@ -291,7 +297,7 @@ public class NoteActivity extends AppCompatActivity
                     }
 
                     public void onStopTrackingTouch(SeekBar seekBar) {
-                        Toast.makeText(NoteActivity.this, "Seek bar progress is :" + progressChangedValue,Toast.LENGTH_SHORT).show();
+//                        Toast.makeText(NoteActivity.this, "Seek bar progress is :" + progressChangedValue,Toast.LENGTH_SHORT).show();
                         strokeValue.setText(""+ progressChangedValue);
                     }
                 });
@@ -387,15 +393,15 @@ public class NoteActivity extends AppCompatActivity
         findViewById(R.id.startCamera).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent i = new Intent(getApplicationContext(),CameraPermissionActivity.class);
-                startActivity(i);
+                Intent intent = new Intent(NoteActivity.this, PhotoActivity.class);
+                startActivityForResult(intent, PHOTO_REQUEST_CODE);
             }
         });
         findViewById(R.id.checkbox_Image).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(NoteActivity.this, StickerSelectActivity.class);
-                startActivityForResult(intent, SELECT_STICKER_REQUEST_CODE);//crea un nuovo intent alla scelta dello sticker
+                startActivityForResult(intent, SELECT_STICKER_REQUEST_CODE);
             }
         });
         //Aggiungere un text sticker
@@ -405,7 +411,7 @@ public class NoteActivity extends AppCompatActivity
             public void onClick(View v) {
                 //Log.i(TAG, "Inizializzo text edit entities");
                 Log.i(TAG, "Text Entities inizializzato");
-                Toast.makeText(getBaseContext(), "Modalità Testo", Toast.LENGTH_SHORT).show();
+//                Toast.makeText(getBaseContext(), "Modalità Testo", Toast.LENGTH_SHORT).show();
                 addTextSticker();
             }
         });
@@ -442,11 +448,8 @@ public class NoteActivity extends AppCompatActivity
                 Log.i(TAG, "Remove menu Panel");
                 TransitionManager.beginDelayedTransition(transitionMainViewContainer);
                 findViewById(R.id.main_motion_draw_entity_edit_panel).bringToFront();
-                //visible = !visible;
-//                verticalEditMenu.setVisibility(View.GONE);
                 hideShowComponents();
                 Log.i(TAG, "Open PaintView for drawing");
-//                Toast.makeText(getBaseContext(), "Modalità Disegno", Toast.LENGTH_SHORT).show();
                 paintView.bringToFront();
                 findViewById(R.id.main_motion_draw_entity_edit_panel).setVisibility(View.VISIBLE);
                 findViewById(R.id.main_motion_draw_entity_edit_panel).bringToFront();
@@ -623,8 +626,7 @@ public class NoteActivity extends AppCompatActivity
         textLayer.setFont(font);
 
         if (BuildConfig.DEBUG) {
-            textLayer.setText("Ciao");
-            //textLayer.addDot();
+            textLayer.setText("C");
         }
 
         return textLayer;
@@ -641,6 +643,31 @@ public class NoteActivity extends AppCompatActivity
                         addSticker(stickerId);
                     }
                 }
+            } else if(requestCode == PHOTO_REQUEST_CODE){
+                if(data!=null){
+                    String url = data.getStringExtra("photoUrl");
+                    Log.i(TAG,"Photo Url: " + url);
+                    if(url!= null || url!=""){
+                        changePhotoBackground(url);
+                    }
+
+
+                }
+            }
+        }
+    }
+
+    private void changePhotoBackground(String url) {
+        Log.i(TAG, url);
+        File file = new File(url);
+        if(MainLayout!=null){
+            try {
+                FileInputStream fileInputStream = new FileInputStream(file);
+                Bitmap bitmap = BitmapFactory.decodeStream(fileInputStream);
+                Drawable drawable = new BitmapDrawable(getResources(), bitmap);
+                MainLayout.setBackground(drawable);
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
             }
         }
     }
