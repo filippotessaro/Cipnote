@@ -11,6 +11,7 @@ import android.widget.Toast;
 import com.cipnote.R;
 import com.cipnote.camera.CameraPermissionActivity;
 import com.cipnote.camera.PhotoActivity;
+import com.cipnote.ui.NoteActivity;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
@@ -73,7 +74,7 @@ public class MainActivity extends AppCompatActivity {
         currentUser = mAuth.getCurrentUser();
 
         if(currentUser != null) {
-            startActivity(new Intent(this, PhotoActivity.class));
+            startActivity(new Intent(this, NoteActivity.class));
             finish();
         }
     }
@@ -135,7 +136,7 @@ public class MainActivity extends AppCompatActivity {
         currentUser = user;
 
         if(currentUser != null) {
-            startActivity(new Intent(this, CameraPermissionActivity.class));
+            startActivity(new Intent(this, NoteActivity.class));
             finish();
         }
     }

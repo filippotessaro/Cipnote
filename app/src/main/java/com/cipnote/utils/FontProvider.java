@@ -30,7 +30,7 @@ public class FontProvider {
 
         // populate fonts
         fontNameToTypefaceFile = new HashMap<>();
-        /*fontNameToTypefaceFile.put("Arial", "Arial.ttf");
+        fontNameToTypefaceFile.put("Arial", "Arial.ttf");
         fontNameToTypefaceFile.put("Eutemia", "Eutemia.ttf");
         fontNameToTypefaceFile.put("GREENPIL", "GREENPIL.ttf");
         fontNameToTypefaceFile.put("Grinched", "Grinched.ttf");
@@ -41,7 +41,7 @@ public class FontProvider {
         fontNameToTypefaceFile.put("SCRIPTIN", "SCRIPTIN.ttf");
         fontNameToTypefaceFile.put("The Godfather v2", "TheGodfather_v2.ttf");
         fontNameToTypefaceFile.put("Aka Dora", "akaDora.ttf");
-        fontNameToTypefaceFile.put("Waltograph", "waltograph42.ttf");*/
+        fontNameToTypefaceFile.put("Waltograph", "waltograph42.ttf");
 
 
         fontNameToTypefaceFile.put("Amatic Bold", "AmaticSC-Bold.ttf");
@@ -49,6 +49,7 @@ public class FontProvider {
         fontNameToTypefaceFile.put("Gamja", "GamjaFlower-Regular.ttf");
         fontNameToTypefaceFile.put("Roboto", "Roboto-Regular.ttf");
         fontNameToTypefaceFile.put("Lato", "Lato-Hairline.ttf");
+        fontNameToTypefaceFile.put("Courier New", "cour.ttf");
 
 
 

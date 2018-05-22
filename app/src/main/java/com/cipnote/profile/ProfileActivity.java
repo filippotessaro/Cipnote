@@ -15,6 +15,7 @@ import com.bumptech.glide.Glide;
 import com.cipnote.R;
 import com.cipnote.camera.PhotoActivity;
 import com.cipnote.login.MainActivity;
+import com.cipnote.ui.NoteActivity;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
@@ -90,7 +91,7 @@ public class ProfileActivity extends AppCompatActivity {
     }
 
     private void ProfileMode() {
-        startActivity(new Intent(this, PhotoActivity.class));
+        startActivity(new Intent(this, NoteActivity.class));
         overridePendingTransition(R.anim.left_to_right, R.anim.right_to_left);
         //  finish();
     }

@@ -22,6 +22,7 @@ import android.support.constraint.ConstraintLayout;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 
+import com.cipnote.camera.CameraPermissionActivity;
 import com.cipnote.camera.RunTimePermission;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -90,9 +91,9 @@ public class NoteActivity extends AppCompatActivity
     protected ConstraintLayout MainLayout;
 
     //Checkbox per creazione di liste con spunta
-    CheckBox checkBox;
-    private long lastTouchTime = 0;
-    private long currentTouchTime = 0;
+//    CheckBox checkBox;
+//    private long lastTouchTime = 0;
+//    private long currentTouchTime = 0;
 
     FirebaseStorage storage;
     StorageReference storageReference;
@@ -100,6 +101,7 @@ public class NoteActivity extends AppCompatActivity
     private FontProvider fontProvider;
     private ViewGroup transitionMainViewContainer;
     private LinearLayout verticalEditMenu;
+    private EditText editTextTitle;
 
     //ELEMENTI DA NASCONDERE (ESCLUSO MENU VERTICALE)
     protected Button saveNoteButton;
@@ -110,6 +112,7 @@ public class NoteActivity extends AppCompatActivity
     protected EditText edit_text_scroll_view;
     protected TextView text_scroll_view;
     protected ImageButton modify_scroll_view;
+
 
     private File folder = null;
 
@@ -191,13 +194,13 @@ public class NoteActivity extends AppCompatActivity
         initScrollViewElements();
 
         //--------------PROVA CHECKBOX-------------------------------
-        checkBox = (CheckBox) findViewById(R.id.checkBoxTest);
-        checkBox.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                checkBox.setChecked(!checkBox.isChecked());
-            }
-        });
+//        checkBox = (CheckBox) findViewById(R.id.checkBoxTest);
+//        checkBox.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                checkBox.setChecked(!checkBox.isChecked());
+//            }
+//        });
 
 
 
@@ -341,6 +344,7 @@ public class NoteActivity extends AppCompatActivity
                 findViewById(R.id.main_motion_draw_entity_edit_panel).setVisibility(View.GONE);
                 //textEntityEditPanel.bringToFront();
                 motionView.bringToFront();
+                editTextTitle.bringToFront();
             }
         });
 
@@ -377,6 +381,16 @@ public class NoteActivity extends AppCompatActivity
 
     //Inizializza gli eventListener del menu di creazione degli elementi della nota
     private void initEditMenuEntitiesListeners() {
+        editTextTitle = (EditText)findViewById(R.id.editTextTitle);
+//        editTextTitle.setSelected(false);
+
+        findViewById(R.id.startCamera).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent i = new Intent(getApplicationContext(),CameraPermissionActivity.class);
+                startActivity(i);
+            }
+        });
         findViewById(R.id.checkbox_Image).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
