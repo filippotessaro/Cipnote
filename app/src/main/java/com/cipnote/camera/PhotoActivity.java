@@ -4,23 +4,29 @@ import android.Manifest;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
+import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.hardware.Camera;
 import android.hardware.SensorManager;
 import android.media.MediaRecorder;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.StatFs;
+import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.v4.view.GestureDetectorCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.OrientationEventListener;
@@ -29,6 +35,7 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.Toast;
 
@@ -39,8 +46,11 @@ import com.cipnote.ui.NoteActivity;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 public class PhotoActivity extends AppCompatActivity
@@ -60,7 +70,9 @@ public class PhotoActivity extends AppCompatActivity
     private ImageView imgCapture;
     private ImageView imgFlashOnOff;
     private ImageView imgSwipeCamera;
+    private Button GalleryBtn;
 
+    public static final int PICK_IMAGE = 1;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
@@ -68,6 +80,13 @@ public class PhotoActivity extends AppCompatActivity
         setContentView(R.layout.activity_camera);
 
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        GalleryBtn = (Button)findViewById(R.id.GalleryBtn);
+        GalleryBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                openGalleryIntent();
+            }
+        });
 
 
         runTimePermission = new RunTimePermission(this);
@@ -107,12 +126,6 @@ public class PhotoActivity extends AppCompatActivity
             }
         });
 
-        findViewById(R.id.btn_note).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                StartNote();
-            }
-        });
 
         gesture_object = new GestureDetectorCompat(this, new LearnGesture());
     }
@@ -782,4 +795,65 @@ public class PhotoActivity extends AppCompatActivity
         }
         return rotation;
     }
+
+    public void openGalleryIntent(){
+//        Intent intent = new Intent();
+//        intent.setType("image/*");
+//        intent.setAction(Intent.ACTION_GET_CONTENT);
+//        startActivityForResult(Intent.createChooser(intent, "Select Picture"), PICK_IMAGE);
+        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+        intent.setType("image/*");
+        startActivityForResult(intent, PICK_IMAGE);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data)
+    {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == PICK_IMAGE && resultCode == Activity.RESULT_OK) {
+            if (data == null) {
+                //Display an error
+                return;
+            }
+            Uri selectedImage = data.getData();
+            String Url = getRealPathFromDocumentUri(getApplicationContext(),selectedImage);
+
+            Log.i("Camera",Url);
+            Intent intent = new Intent();
+            intent.putExtra("photoUrl", Url);
+            setResult(RESULT_OK, intent);
+            finish();
+        }
+
+
+    }
+
+//
+    public static String getRealPathFromDocumentUri(Context context, Uri uri){
+        String filePath = "";
+
+        Pattern p = Pattern.compile("(\\d+)$");
+        Matcher m = p.matcher(uri.toString());
+        if (!m.find()) {
+    //        Log.e(ImageConverter.class.getSimpleName(), "ID for requested image not found: " + uri.toString());
+            return filePath;
+        }
+        String imgId = m.group();
+
+        String[] column = { MediaStore.Images.Media.DATA };
+        String sel = MediaStore.Images.Media._ID + "=?";
+
+        Cursor cursor = context.getContentResolver().query(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                column, sel, new String[]{ imgId }, null);
+
+        int columnIndex = cursor.getColumnIndex(column[0]);
+
+        if (cursor.moveToFirst()) {
+            filePath = cursor.getString(columnIndex);
+        }
+        cursor.close();
+
+        return filePath;
+    }
+
 }

@@ -388,7 +388,7 @@ public class NoteActivity extends AppCompatActivity
     //Inizializza gli eventListener del menu di creazione degli elementi della nota
     private void initEditMenuEntitiesListeners() {
         editTextTitle = (EditText)findViewById(R.id.editTextTitle);
-//        editTextTitle.setSelected(false);
+        editTextTitle.setSelected(false);
 
         findViewById(R.id.startCamera).setOnClickListener(new View.OnClickListener() {
             @Override
