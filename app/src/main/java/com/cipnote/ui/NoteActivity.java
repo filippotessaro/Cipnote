@@ -39,6 +39,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
@@ -130,7 +131,6 @@ public class NoteActivity extends AppCompatActivity
                 Log.i(TAG, "VISIBLE");
                 Log.i(TAG, "Remove menu Panel");
                 TransitionManager.beginDelayedTransition(transitionMainViewContainer);
-                //verticalEditMenu.setVisibility(View.GONE);
                 hideShowComponents();
                 textEntityEditPanel.setVisibility(View.VISIBLE);
 
@@ -139,10 +139,6 @@ public class NoteActivity extends AppCompatActivity
 
                 Log.i(TAG, "GONE");
                 textEntityEditPanel.setVisibility(View.GONE);
-//                Log.i(TAG, "Remove menu Panel");
-//                TransitionManager.beginDelayedTransition(transitionMainViewContainer);
-//                verticalEditMenu.setVisibility(View.VISIBLE);
-//                Log.i(TAG, "REopen VERTICAL EDIT MENU");
                 hideShowComponents();
             }
         }
@@ -158,7 +154,7 @@ public class NoteActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_note);
-
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
         //Inizializzazione Firebase
         storage = FirebaseStorage.getInstance();
@@ -184,12 +180,10 @@ public class NoteActivity extends AppCompatActivity
         paintView.init(metrics);
 
         //Inizializzazione contenitore di testi e di immamgini
-        motionView = findViewById(R.id.main_motion_view);
         textEntityEditPanel = findViewById(R.id.main_motion_text_entity_edit_panel);
+        motionView = findViewById(R.id.main_motion_view);
         motionView.setMotionViewCallback(motionViewCallback);
         motionView.bringToFront();
-
-//        findViewById(R.id.editTextTitle).bringToFront();
 
         //INIZIALIZZAZIONE BOTTONI
         strokeDialog = new Dialog(this);
@@ -239,7 +233,6 @@ public class NoteActivity extends AppCompatActivity
             public void onClick(View v) {
                 Drawable drawable = modify_scroll_view.getDrawable();
                 if (drawable.getConstantState().equals(getResources().getDrawable(R.drawable.ic_mode_edit).getConstantState())){
-                    //Do your work here
                     edit_text_scroll_view.setText(text_scroll_view.getText().toString());
                     text_scroll_view.setVisibility(View.GONE);
                     edit_text_scroll_view.setVisibility(View.VISIBLE);
@@ -259,6 +252,12 @@ public class NoteActivity extends AppCompatActivity
         saveNoteButton = findViewById(R.id.saveNoteButton);
         recordButton = findViewById(R.id.recordButton);
         deleteNoteButton = findViewById(R.id.deleteNoteButton);
+        deleteNoteButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+            }
+        });
     }
 
 
@@ -290,6 +289,7 @@ public class NoteActivity extends AppCompatActivity
 
                     public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                         progressChangedValue = progress;
+                        strokeValue.setText(""+ progressChangedValue);
                     }
 
                     public void onStartTrackingTouch(SeekBar seekBar) {
@@ -297,8 +297,7 @@ public class NoteActivity extends AppCompatActivity
                     }
 
                     public void onStopTrackingTouch(SeekBar seekBar) {
-//                        Toast.makeText(NoteActivity.this, "Seek bar progress is :" + progressChangedValue,Toast.LENGTH_SHORT).show();
-                        strokeValue.setText(""+ progressChangedValue);
+                        // TODO Auto-generated method stub
                     }
                 });
 
@@ -306,7 +305,6 @@ public class NoteActivity extends AppCompatActivity
                 alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-//                        Toast.makeText(getBaseContext(), "Cancel clicked", Toast.LENGTH_SHORT).show();
                     }
                 });
 
@@ -342,13 +340,10 @@ public class NoteActivity extends AppCompatActivity
             public void onClick(View v) {
                 Log.i(TAG, "Remove menu Panel");
                 TransitionManager.beginDelayedTransition(transitionMainViewContainer);
-//                verticalEditMenu.setVisibility(View.VISIBLE);
                 hideShowComponents();
                 Log.i(TAG, "Open PaintView for drawing");
-//                Toast.makeText(getBaseContext(), "Modalità uscita disegno", Toast.LENGTH_SHORT).show();
                 paintView.bringToFront();
                 findViewById(R.id.main_motion_draw_entity_edit_panel).setVisibility(View.GONE);
-                //textEntityEditPanel.bringToFront();
                 motionView.bringToFront();
                 editTextTitle.bringToFront();
             }
@@ -406,12 +401,9 @@ public class NoteActivity extends AppCompatActivity
         });
         //Aggiungere un text sticker
         findViewById(R.id.add_new_text).setOnClickListener(new View.OnClickListener() {
-            //boolean visible;
             @Override
             public void onClick(View v) {
-                //Log.i(TAG, "Inizializzo text edit entities");
                 Log.i(TAG, "Text Entities inizializzato");
-//                Toast.makeText(getBaseContext(), "Modalità Testo", Toast.LENGTH_SHORT).show();
                 addTextSticker();
             }
         });
@@ -472,16 +464,9 @@ public class NoteActivity extends AppCompatActivity
 
     //Inizializza il menu di modifica del Text Sticker
     private void initTextEntitiesListeners() {
-//        findViewById(R.id.text_entity_font_size_increase).setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                increaseTextEntitySize();
-//            }
-//        });
         findViewById(R.id.text_entity_add_dot).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-//                decreaseTextEntitySize();
                 addDot();
             }
         });
@@ -528,7 +513,6 @@ public class NoteActivity extends AppCompatActivity
 //    }
 
     private void changeTextEntityColor() {
-        //Log.i(TAG,"Cambio Font");
         TextEntity textEntity = currentTextEntity();
         if (textEntity == null) {
             return;
@@ -758,6 +742,8 @@ public class NoteActivity extends AppCompatActivity
             deleteNoteButton.setVisibility(View.VISIBLE);
             recordButton.setVisibility(View.VISIBLE);
             saveNoteButton.setVisibility(View.VISIBLE);
+            editTextTitle.setVisibility(View.VISIBLE);
+            findViewById(R.id.startCamera).setVisibility(View.VISIBLE);
 
             saveNoteButton.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -770,6 +756,10 @@ public class NoteActivity extends AppCompatActivity
             deleteNoteButton.setVisibility(View.GONE);
             recordButton.setVisibility(View.GONE);
             saveNoteButton.setVisibility(View.GONE);
+            editTextTitle.setVisibility(View.GONE);
+            findViewById(R.id.startCamera).setVisibility(View.GONE);
+
+
         }
 
     }

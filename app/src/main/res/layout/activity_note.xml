@@ -34,7 +34,6 @@
             android:layout_weight="1"
             android:background="@color/transparent"
             android:elevation="1dp"
-            android:onClick="loadImagePaintView"
             android:src="@drawable/ic_delete_note_white_48dp"
             android:visibility="visible"
             app:layout_constraintEnd_toEndOf="parent"
@@ -320,15 +319,17 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:ems="10"
-                    android:visibility="gone"
-                    android:inputType="textMultiLine" />
+                    android:inputType="textMultiLine"
+                    android:selectAllOnFocus="true"
+                    android:textSize="24sp"
+                    android:visibility="gone" />
 
                 <TextView
                     android:id="@+id/text_scroll_view"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="The standard Lorem Ipsum passage, used since the 1500Lorem
-                    ipsum dolor sit amet." />
+                    android:text="The standard Lorem Ipsum passage, used since the 1500 Lorem ipsum dolor sit amet."
+                    android:textSize="24sp" />
 
             </LinearLayout>
         </ScrollView>

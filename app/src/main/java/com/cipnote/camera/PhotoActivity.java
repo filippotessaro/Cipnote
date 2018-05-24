@@ -572,12 +572,35 @@ public class PhotoActivity extends AppCompatActivity
             List<Camera.Size> sizes = param.getSupportedPreviewSizes();
             Camera.Size size = sizes.get(0);
 
-            // get top size
-            for (int i = 0; i < sizes.size(); i++) {
-                if (sizes.get(i).width > size.width)
-                    size = sizes.get(i);
+            boolean check = imgFlashOnOff.isShown();
+
+            // check if focus is enable
+            if(check == true) {
+                param.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);
+                camera.setParameters(param);
             }
-            //set max Picture Size
+
+            //get diff to get perfact preview sizes
+            camera.setParameters(param);
+
+            DisplayMetrics displaymetrics = new DisplayMetrics();
+            getWindowManager().getDefaultDisplay().getMetrics(displaymetrics);
+            int height = displaymetrics.heightPixels;
+            int width = displaymetrics.widthPixels;
+            long diff = (height * 1000 / width);
+            long cdistance = Integer.MAX_VALUE;
+            int idx = 0;
+            for (int i = 0; i < sizes.size(); i++) {
+                long value = (long) (sizes.get(i).width * 1000) / sizes.get(i).height;
+                if (value > diff && value < cdistance) {
+                    idx = i;
+                    cdistance = value;
+                }
+                Log.e("CIPNOTE", "width=" + sizes.get(i).width + " height=" + sizes.get(i).height);
+            }
+            Log.e("CIPNOTE CAMERA", "INDEX:  " + idx);
+            Camera.Size cs = sizes.get(idx);
+
             param.setPictureSize(size.width, size.height);
 
             camera.setParameters(param);
