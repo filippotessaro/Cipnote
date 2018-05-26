@@ -44,6 +44,9 @@ dependencies {
 
     // color picker
     implementation 'com.github.QuadFlask:colorpicker:0.0.13'
+
+    implementation 'ai.api:libai:1.6.12'
+
 }
 
 apply plugin: 'com.google.gms.google-services'

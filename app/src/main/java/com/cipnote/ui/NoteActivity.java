@@ -123,6 +123,8 @@ public class NoteActivity extends AppCompatActivity
 
     private File folder = null;
 
+
+
     private final MotionView.MotionViewCallback motionViewCallback =
             new MotionView.MotionViewCallback() {
         @Override
