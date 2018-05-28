@@ -4,6 +4,7 @@ import android.Manifest;
 import android.annotation.TargetApi;
 import android.app.Dialog;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -20,12 +21,14 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
 import android.support.constraint.ConstraintLayout;
+import android.support.v4.view.MotionEventCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 
 import com.cipnote.camera.CameraPermissionActivity;
 import com.cipnote.camera.PhotoActivity;
 import com.cipnote.camera.RunTimePermission;
+import com.cipnote.multitouch.MoveGestureDetector;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.storage.FirebaseStorage;
@@ -36,7 +39,12 @@ import com.transitionseverywhere.*;
 
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.GestureDetector;
+import android.view.GestureDetector.OnGestureListener;
+import android.view.Gravity;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
+import android.view.ScaleGestureDetector;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
@@ -124,10 +132,9 @@ public class NoteActivity extends AppCompatActivity
     protected TextView text_scroll_view;
     protected ImageButton modify_scroll_view;
 
-
     private File folder = null;
 
-    //Inizializzaizone DIalogFlow
+    //Inizializzaizone DialogFlow
     private AIService aiService;
 
 
@@ -161,6 +168,7 @@ public class NoteActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_note);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+
 
         //Inizializzazione Firebase
         storage = FirebaseStorage.getInstance();
@@ -205,6 +213,111 @@ public class NoteActivity extends AppCompatActivity
         initEditMenuEntitiesListeners();
         initShowHideElement();
         initScrollViewElements();
+
+
+        final GestureDetector gd = new GestureDetector(this,new OnGestureListener() {
+            @Override
+            public boolean onSingleTapUp(MotionEvent e) {
+                Log.i("Single","Single Tap");
+                // TODO Auto-generated method stub
+
+                return false;
+            }
+
+            @Override
+            public void onShowPress(MotionEvent e) {
+                // TODO Auto-generated method stub
+
+            }
+
+            @Override
+            public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX,
+                                    float distanceY) {
+                // TODO Auto-generated method stub
+                return false;
+            }
+
+            @Override
+            public void onLongPress(MotionEvent e) {
+                // TODO Auto-generated method stub
+
+            }
+
+            @Override
+            public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX,
+                                   float velocityY) {
+                // TODO Auto-generated method stub
+                return false;
+            }
+
+            @Override
+            public boolean onDown(MotionEvent e) {
+                // TODO Auto-generated method stub
+                return false;
+            }
+        });
+
+        // set the on Double tap listener
+        gd.setOnDoubleTapListener(new GestureDetector.OnDoubleTapListener() {
+            @Override
+            public boolean onDoubleTap(MotionEvent e) {
+                Toast.makeText(NoteActivity.this,"Double Tap",Toast.LENGTH_LONG).show();
+                return false;
+            }
+
+            @Override
+            public boolean onDoubleTapEvent(MotionEvent e) {
+                // if the second tap hadn't been released and it's being moved
+                Log.i("TAP", "Doppio tap riconosciuto!");
+                return false;
+            }
+
+            @Override
+            public boolean onSingleTapConfirmed(MotionEvent e) {
+                // TODO Auto-generated method stub
+                return false;
+            }
+
+        });
+
+        findViewById(R.id.addEvent).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                TextView textView = new TextView(getApplicationContext());
+                textView.setText("Ciao Fabio");
+                textView.setTextSize(25);
+                textView.setBackgroundColor(R.drawable.button_background);
+                textView.setGravity(Gravity.CENTER);
+
+//                textView.setOnTouchListener(new View.OnTouchListener() {
+//
+//                    @Override
+//                    public boolean onTouch(View v, MotionEvent event) {
+//
+//                        if (event.getAction() == MotionEvent.ACTION_MOVE) {
+//                            // Offsets are for centering the TextView on the touch location
+//                            v.setX(event.getRawX() - v.getWidth() / 2.0f);
+//                            v.setY(event.getRawY() - v.getHeight() / 2.0f);
+//                        }
+//
+//                        return true;
+//                        //TODO implementa il doppio click per abilitare lo spostamento
+//                    }
+//
+//                });
+
+                textView.setOnTouchListener(new View.OnTouchListener() {
+
+                    @Override
+                    public boolean onTouch(View v, MotionEvent event) {
+                        // TODO Auto-generated method stub
+                        gd.onTouchEvent(event);
+                        return true;
+                    }
+                });
+                MainLayout.addView(textView);
+            }
+        });
 
     }
 
@@ -375,7 +488,10 @@ public class NoteActivity extends AppCompatActivity
     //Inizializza gli eventListener del menu di creazione degli elementi della nota
     private void initEditMenuEntitiesListeners() {
         editTextTitle = (EditText)findViewById(R.id.editTextTitle);
-        editTextTitle.setSelected(false);
+
+        // initialize the Gesture Detector
+
+
 
 
         findViewById(R.id.startCamera).setOnClickListener(new View.OnClickListener() {
@@ -423,8 +539,6 @@ public class NoteActivity extends AppCompatActivity
 
         //aggiungi disegno
         findViewById(R.id.add_draw).setOnClickListener(new View.OnClickListener() {
-
-            //boolean visible;
 
             @TargetApi(Build.VERSION_CODES.KITKAT)
             @RequiresApi(api = Build.VERSION_CODES.KITKAT)
