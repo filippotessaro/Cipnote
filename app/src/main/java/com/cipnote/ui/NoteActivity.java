@@ -73,9 +73,18 @@ import com.cipnote.widget.entity.MotionEntity;
 import com.cipnote.widget.entity.TextEntity;
 import com.transitionseverywhere.Recolor;
 
+import ai.api.AIListener;
+import ai.api.android.AIConfiguration;
+import ai.api.android.AIService;
+import ai.api.model.AIError;
+import ai.api.model.AIResponse;
+import ai.api.model.Result;
+import com.google.gson.JsonElement;
+import java.util.Map;
+
 
 public class NoteActivity extends AppCompatActivity
-        implements TextEditorDialogFragment.OnTextLayerCallback {
+        implements TextEditorDialogFragment.OnTextLayerCallback, AIListener {
 
     //Variabile per apertura popup nella modifica dello spessore del tratto di disegno
     Dialog strokeDialog;
@@ -96,11 +105,6 @@ public class NoteActivity extends AppCompatActivity
     protected MotionView motionView;
     protected View textEntityEditPanel;
     protected ConstraintLayout MainLayout;
-
-    //Checkbox per creazione di liste con spunta
-//    CheckBox checkBox;
-//    private long lastTouchTime = 0;
-//    private long currentTouchTime = 0;
 
     FirebaseStorage storage;
     StorageReference storageReference;
@@ -123,6 +127,8 @@ public class NoteActivity extends AppCompatActivity
 
     private File folder = null;
 
+    //Inizializzaizone DIalogFlow
+    private AIService aiService;
 
 
     private final MotionView.MotionViewCallback motionViewCallback =
@@ -135,10 +141,8 @@ public class NoteActivity extends AppCompatActivity
                 TransitionManager.beginDelayedTransition(transitionMainViewContainer);
                 hideShowComponents();
                 textEntityEditPanel.setVisibility(View.VISIBLE);
-
                 textEntityEditPanel.bringToFront();
             } else {
-
                 Log.i(TAG, "GONE");
                 textEntityEditPanel.setVisibility(View.GONE);
                 hideShowComponents();
@@ -161,6 +165,13 @@ public class NoteActivity extends AppCompatActivity
         //Inizializzazione Firebase
         storage = FirebaseStorage.getInstance();
         storageReference = storage.getReference();
+
+        //Inizializzazione servizio apiai
+        final AIConfiguration config = new AIConfiguration("e28f9bbca842430b8ce82b59291e762f",
+                AIConfiguration.SupportedLanguages.Italian,
+                AIConfiguration.RecognitionEngine.System);
+        aiService = AIService.getService(this, config);
+        aiService.setListener(this);
 
         //Inizializzazione colori background
         allColors = getResources().getStringArray(R.array.colors);
@@ -195,34 +206,6 @@ public class NoteActivity extends AppCompatActivity
         initShowHideElement();
         initScrollViewElements();
 
-        //--------------PROVA CHECKBOX-------------------------------
-//        checkBox = (CheckBox) findViewById(R.id.checkBoxTest);
-//        checkBox.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                checkBox.setChecked(!checkBox.isChecked());
-//            }
-//        });
-
-
-
-//        checkBox.setOnTouchListener(new View.OnTouchListener() {
-//
-//            @Override
-//            public boolean onTouch(View v, MotionEvent event) {
-//
-//                if (event.getAction() == MotionEvent.ACTION_MOVE) {
-//                    // Offsets are for centering the TextView on the touch location
-//                    v.setX(event.getRawX() - v.getWidth() / 2.0f);
-//                    v.setY(event.getRawY() - v.getHeight() / 2.0f);
-//                }
-//
-//                return true;
-//                //TODO implementa il doppio click per abilitare lo spostamento
-//            }
-//
-//        });
-
     }
 
     private void initScrollViewElements() {
@@ -253,11 +236,18 @@ public class NoteActivity extends AppCompatActivity
     private void initShowHideElement(){
         saveNoteButton = findViewById(R.id.saveNoteButton);
         recordButton = findViewById(R.id.recordButton);
+        recordButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                aiService.startListening();
+            }
+        });
+
         deleteNoteButton = findViewById(R.id.deleteNoteButton);
         deleteNoteButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                getAllEntities();
             }
         });
     }
@@ -387,6 +377,7 @@ public class NoteActivity extends AppCompatActivity
         editTextTitle = (EditText)findViewById(R.id.editTextTitle);
         editTextTitle.setSelected(false);
 
+
         findViewById(R.id.startCamera).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -494,26 +485,6 @@ public class NoteActivity extends AppCompatActivity
         });
     }
 
-//    private void increaseTextEntitySize() {
-//        Log.i(TAG,"Increase size");
-//        TextEntity textEntity = currentTextEntity();
-//        if (textEntity != null) {
-//            textEntity.getLayer().getFont().increaseSize(TextLayer.Limits.FONT_SIZE_STEP);
-//            textEntity.updateEntity();
-//            motionView.invalidate();
-//        }
-//    }
-//
-//    private void decreaseTextEntitySize() {
-//        TextEntity textEntity = currentTextEntity();
-//        if (textEntity != null) {
-//            //textEntity.getLayer().getFont().decreaseSize(TextLayer.Limits.FONT_SIZE_STEP);
-//            textEntity.getLayer().addDot();
-//            textEntity.updateEntity();
-//            motionView.invalidate();
-//        }
-//    }
-
     private void changeTextEntityColor() {
         TextEntity textEntity = currentTextEntity();
         if (textEntity == null) {
@@ -578,6 +549,7 @@ public class NoteActivity extends AppCompatActivity
     @Nullable
     private TextEntity currentTextEntity() {
         if (motionView != null && motionView.getSelectedEntity() instanceof TextEntity) {
+            //Log.i(TAG,""+currentTextEntity().getLayer().getFont());
             return ((TextEntity) motionView.getSelectedEntity());
         } else {
             return null;
@@ -612,7 +584,7 @@ public class NoteActivity extends AppCompatActivity
         textLayer.setFont(font);
 
         if (BuildConfig.DEBUG) {
-            textLayer.setText("C");
+            textLayer.setText("");
         }
 
         return textLayer;
@@ -636,7 +608,6 @@ public class NoteActivity extends AppCompatActivity
                     if(url!= null || url!=""){
                         changePhotoBackground(url);
                     }
-
 
                 }
             }
@@ -766,6 +737,11 @@ public class NoteActivity extends AppCompatActivity
 
     }
 
+    private void getAllEntities(){
+        List<MotionEntity> l = motionView.getEntities();
+        Log.i(TAG,""+ l.size());
+    }
+
     private void SaveNote() {
         RunTimePermission runTimePermission = new RunTimePermission(this);
         runTimePermission.requestPermission(new String[]{
@@ -789,5 +765,44 @@ public class NoteActivity extends AppCompatActivity
                 finish();
             }
         });
+    }
+
+    @Override
+    public void onResult(AIResponse response) {
+        Result result = response.getResult();
+
+        // Get parameters
+        String parameterString = "";
+        if (result.getParameters() != null && !result.getParameters().isEmpty()) {
+            for (final Map.Entry<String, JsonElement> entry : result.getParameters().entrySet()) {
+                parameterString += "(" + entry.getKey() + ", " + entry.getValue() + ") ";
+            }
+        }
+        Log.i(TAG,"Query:" + result.getResolvedQuery());
+    }
+
+    @Override
+    public void onError(AIError error) {
+        Log.i(TAG,error.toString());
+    }
+
+    @Override
+    public void onAudioLevel(float level) {
+
+    }
+
+    @Override
+    public void onListeningStarted() {
+
+    }
+
+    @Override
+    public void onListeningCanceled() {
+
+    }
+
+    @Override
+    public void onListeningFinished() {
+
     }
 }

@@ -77,7 +77,6 @@ public class TextEditorDialogFragment extends DialogFragment{
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
         Bundle args = getArguments();
         String text = "";
         if (args != null) {
@@ -159,6 +158,7 @@ public class TextEditorDialogFragment extends DialogFragment{
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         Dialog dialog = super.onCreateDialog(savedInstanceState);
+        dialog.getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         dialog.requestWindowFeature(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
         return dialog;

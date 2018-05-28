@@ -50,8 +50,6 @@ public class MotionView extends View {
 
     private Paint selectedLayerPaint;
 
-    //private PaintView paintView;
-
     // callback
     @Nullable
     private MotionViewCallback motionViewCallback;
@@ -137,7 +135,7 @@ public class MotionView extends View {
         Paint borderPaint = new Paint();
         borderPaint.setStrokeWidth(strokeSize);
         borderPaint.setAntiAlias(true);
-        borderPaint.setColor(ContextCompat.getColor(getContext(), R.color.lightBlue));
+        borderPaint.setColor(ContextCompat.getColor(getContext(), R.color.orange));
 
         entity.setBorderPaint(borderPaint);
     }

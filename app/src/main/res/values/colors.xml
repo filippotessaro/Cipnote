@@ -16,5 +16,6 @@
     <color name="trans">#00000000 </color>
     <color name="darkGray">#424242</color>
     <color name="white">#FFFFFF</color>
+    <color name="orange">#e99e53</color>
 
 </resources>
