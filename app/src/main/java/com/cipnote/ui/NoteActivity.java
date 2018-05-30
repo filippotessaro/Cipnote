@@ -28,6 +28,7 @@ import android.support.v7.app.AppCompatActivity;
 import com.cipnote.camera.CameraPermissionActivity;
 import com.cipnote.camera.PhotoActivity;
 import com.cipnote.camera.RunTimePermission;
+import com.cipnote.data.TextEntityData;
 import com.cipnote.multitouch.MoveGestureDetector;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -48,6 +49,7 @@ import android.view.ScaleGestureDetector;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
@@ -489,11 +491,6 @@ public class NoteActivity extends AppCompatActivity
     private void initEditMenuEntitiesListeners() {
         editTextTitle = (EditText)findViewById(R.id.editTextTitle);
 
-        // initialize the Gesture Detector
-
-
-
-
         findViewById(R.id.startCamera).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -663,7 +660,6 @@ public class NoteActivity extends AppCompatActivity
     @Nullable
     private TextEntity currentTextEntity() {
         if (motionView != null && motionView.getSelectedEntity() instanceof TextEntity) {
-            //Log.i(TAG,""+currentTextEntity().getLayer().getFont());
             return ((TextEntity) motionView.getSelectedEntity());
         } else {
             return null;
@@ -852,8 +848,48 @@ public class NoteActivity extends AppCompatActivity
     }
 
     private void getAllEntities(){
+
+        //Algoritmo per ripristinare le text entities
         List<MotionEntity> l = motionView.getEntities();
-        Log.i(TAG,""+ l.size());
+//        Log.i(TAG,""+ l.size());
+        if(l.size()>=1){
+            Log.i(TAG, "" + l.get(0).getLayer().getRotationInDegrees());
+            Log.i(TAG, "x: "+ l.get(0).getLayer().getX());
+            Log.i(TAG, "y: "+ l.get(0).getLayer().getY());
+            Log.i(TAG, "Scale: "+ l.get(0).getLayer().getScale());
+            TextEntity textEntity = (TextEntity) l.get(0);
+            Log.i(TAG, "Text: "+ textEntity.getLayer().getText());
+            Log.i(TAG, "Size Font: "+ textEntity.getLayer().getFont().getTypeface());
+            Log.i(TAG, "Size Font: "+ textEntity.getLayer().getFont().getSize());
+
+        }
+
+        final List<String> fonts = fontProvider.getFontNames();
+        String searchString = "Lato";
+        int index = -1;
+        for (int i=0;i<fonts.size();i++) {
+            if (fonts.get(i).equals(searchString)) {
+                index = i;
+                break;
+            }
+        }
+
+        TextEntity t = (TextEntity) l.get(0);
+        t.getLayer().setX((float) -0.02777778);
+        t.getLayer().setY((float) 0.72161454);
+        t.getLayer().getFont().setTypeface(fonts.get(index));
+        t.updateEntity();
+        t.getLayer().setRotationInDegrees(45);
+
+//        TextEntityData t = new TextEntityData(-0.02777778,0.72161454, t.getLayer().getText(),  )
+
+        //Algoritmo per ripristinare le Sticker entity
+        ImageEntity pica = (ImageEntity)l.get(1);
+        pica.getLayer().setX((float) -0.02777778);
+        pica.getLayer().setY((float) 0.72161454);
+
+        motionView.invalidate();
+
     }
 
     private void SaveNote() {

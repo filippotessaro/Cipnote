@@ -2,7 +2,10 @@ package com.cipnote.multitouch;
 
 import android.content.Context;
 import android.graphics.PointF;
+import android.view.GestureDetector;
 import android.view.MotionEvent;
+
+import com.cipnote.widget.MotionView;
 
 /**
  * @author Almer Thie (code.almeros.com)
@@ -32,7 +35,7 @@ public class MoveGestureDetector extends BaseGestureDetector {
     private PointF mPrevFocusInternal;
     private PointF mFocusExternal = new PointF();
     private PointF mFocusDeltaExternal = new PointF();
-    public MoveGestureDetector(Context context, OnMoveGestureListener listener) {
+    public MoveGestureDetector(Context context, MotionView.MoveListener listener) {
         super(context);
         mListener = listener;
     }
