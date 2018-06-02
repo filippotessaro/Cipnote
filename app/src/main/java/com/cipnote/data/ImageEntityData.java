@@ -1,33 +1,19 @@
 package com.cipnote.data;
 
-public class TextEntityData {
+public class ImageEntityData {
 
     private float x,y;
-    private String text;
-    private String font;
+    private String logo;
     private int deg;
     private float scale;
-    private int color;
 
-    public TextEntityData(float x, float y, String text, String font, int deg, float scale, int c) {
+    public ImageEntityData(float x, float y, String logo, int deg, float scale) {
         this.x = x;
         this.y = y;
-        this.text = text;
-        this.font = font;
+        this.logo = logo;
         this.deg = deg;
         this.scale = scale;
-        this.color = c;
     }
-
-    public int getColor() {
-        return color;
-    }
-
-    public void setColor(int color) {
-        this.color = color;
-    }
-
-
 
     public float getX() {
         return x;
@@ -45,20 +31,12 @@ public class TextEntityData {
         this.y = y;
     }
 
-    public String getText() {
-        return text;
+    public String getLogo() {
+        return logo;
     }
 
-    public void setText(String text) {
-        this.text = text;
-    }
-
-    public String getFont() {
-        return font;
-    }
-
-    public void setFont(String font) {
-        this.font = font;
+    public void setLogo(String logo) {
+        this.logo = logo;
     }
 
     public int getDeg() {
@@ -77,3 +55,4 @@ public class TextEntityData {
         this.scale = scale;
     }
 }
+

@@ -28,6 +28,7 @@ import android.support.v7.app.AppCompatActivity;
 import com.cipnote.camera.CameraPermissionActivity;
 import com.cipnote.camera.PhotoActivity;
 import com.cipnote.camera.RunTimePermission;
+import com.cipnote.data.NoteEntityData;
 import com.cipnote.data.TextEntityData;
 import com.cipnote.multitouch.MoveGestureDetector;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -371,7 +372,7 @@ public class NoteActivity extends AppCompatActivity
         deleteNoteButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                getAllEntities();
+                //getAllEntities();
             }
         });
     }
@@ -892,8 +893,8 @@ public class NoteActivity extends AppCompatActivity
 
         String id = "jLCqygWwccVyD6a8slzqX2j2unq2";
         String child = dbTextNotes.push().getKey();
-        TextEntityData te = new TextEntityData(id,(float) -0.02777778,(float) 0.72161454, t.getLayer().getText(), "Lato" , 45,t.getLayer().getScale() );
-        dbTextNotes.child(child).setValue(te);
+//        TextEntityData te = new TextEntityData(id,(float) -0.02777778,(float) 0.72161454, t.getLayer().getText(), "Lato" , 45,t.getLayer().getScale() );
+//        dbTextNotes.child(child).setValue(te);
         Toast.makeText(this, "Note Added", Toast.LENGTH_SHORT).show();
         //Algoritmo per ripristinare le Sticker entity
 //        ImageEntity pica = (ImageEntity)l.get(1);
@@ -922,28 +923,50 @@ public class NoteActivity extends AppCompatActivity
     }
 
     private void SaveNote() {
-        RunTimePermission runTimePermission = new RunTimePermission(this);
-        runTimePermission.requestPermission(new String[]{
-                Manifest.permission.WRITE_EXTERNAL_STORAGE
-        }, new RunTimePermission.RunTimePermissionListener() {
+        //Algoritmo per ripristinare le text entities
+        List<MotionEntity> l = motionView.getEntities();
 
-            @Override
-            public void permissionGranted() {
+        NoteEntityData n = new NoteEntityData("", "jLCqygWwccVyD6a8slzqX2j2unq2" , editTextTitle.getText().toString(), "descrizionfhkjfhfkjf");
+        int deg= 0;
+        float x = 0;
+        float y = 0;
+        float scale = 0;
+        String font, contentText;
+        int color;
 
-                //create a folder to get image
-                folder = new File(Environment.getExternalStorageDirectory() +
-                        "/CipNote");
-                if (!folder.exists()) {
-                    folder.mkdirs();
-                }
+        for (int i = 0; i < l.size(); i++){
+            if(l.get(i) instanceof TextEntity){
+                deg = (int) l.get(0).getLayer().getRotationInDegrees();
+                x = l.get(0).getLayer().getX();
+                y = l.get(0).getLayer().getY();
+                scale = l.get(0).getLayer().getScale();
+                font  = ((TextEntity)l.get(0)).getLayer().getFont().getTypeface();
+                color = ((TextEntity)l.get(0)).getLayer().getFont().getColor();
+                //Log.i(TAG, ""+ ((TextEntity)l.get(0)).getLayer().getFont().getColor());
+                contentText = ((TextEntity)l.get(0)).getLayer().getText();
+                TextEntityData t = new TextEntityData(x, y,contentText,font, deg,scale, color);
+                n.addTextElement(t);
+            } else {
+                Log.i(TAG,"Dovrebbe essere un immagine");
             }
 
-            @Override
-            public void permissionDenied() {
 
-                finish();
-            }
-        });
+        }
+        String userId = "jLCqygWwccVyD6a8slzqX2j2unq2";
+
+        try{
+            String child = dbTextNotes.push().getKey();
+            n.setId(child);
+            dbTextNotes.child(child).setValue(n);
+            Toast.makeText(this, "Note Added", Toast.LENGTH_SHORT).show();
+        }catch(Exception e){
+            Toast.makeText(this, "Problem with Connection", Toast.LENGTH_SHORT).show();
+        }
+
+
+
+
+
     }
 
     @Override
