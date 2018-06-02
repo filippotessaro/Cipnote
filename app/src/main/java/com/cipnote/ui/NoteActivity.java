@@ -32,6 +32,12 @@ import com.cipnote.data.TextEntityData;
 import com.cipnote.multitouch.MoveGestureDetector;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
@@ -118,6 +124,7 @@ public class NoteActivity extends AppCompatActivity
 
     FirebaseStorage storage;
     StorageReference storageReference;
+    DatabaseReference dbTextNotes;
 
     private FontProvider fontProvider;
     private ViewGroup transitionMainViewContainer;
@@ -175,6 +182,8 @@ public class NoteActivity extends AppCompatActivity
         //Inizializzazione Firebase
         storage = FirebaseStorage.getInstance();
         storageReference = storage.getReference();
+
+        dbTextNotes = FirebaseDatabase.getInstance().getReference("textnote");
 
         //Inizializzazione servizio apiai
         final AIConfiguration config = new AIConfiguration("e28f9bbca842430b8ce82b59291e762f",
@@ -881,12 +890,32 @@ public class NoteActivity extends AppCompatActivity
         t.updateEntity();
         t.getLayer().setRotationInDegrees(45);
 
-//        TextEntityData t = new TextEntityData(-0.02777778,0.72161454, t.getLayer().getText(),  )
-
+        String id = "jLCqygWwccVyD6a8slzqX2j2unq2";
+        String child = dbTextNotes.push().getKey();
+        TextEntityData te = new TextEntityData(id,(float) -0.02777778,(float) 0.72161454, t.getLayer().getText(), "Lato" , 45,t.getLayer().getScale() );
+        dbTextNotes.child(child).setValue(te);
+        Toast.makeText(this, "Note Added", Toast.LENGTH_SHORT).show();
         //Algoritmo per ripristinare le Sticker entity
-        ImageEntity pica = (ImageEntity)l.get(1);
-        pica.getLayer().setX((float) -0.02777778);
-        pica.getLayer().setY((float) 0.72161454);
+//        ImageEntity pica = (ImageEntity)l.get(1);
+//        pica.getLayer().setX((float) -0.02777778);
+//        pica.getLayer().setY((float) 0.72161454);
+
+        Query query = dbTextNotes.orderByChild("id").equalTo(id);
+        query.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot snapshot) {
+                for (DataSnapshot user: snapshot.getChildren()) {
+                    Log.i(TAG,user.toString());
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                Log.w(TAG, "getUser:onCancelled", databaseError.toException());
+            }
+        });
+
+
 
         motionView.invalidate();
 

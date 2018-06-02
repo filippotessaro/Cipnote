@@ -25,6 +25,10 @@
         {
           "client_id": "470940302605-o70is19rabtpobj12u4hlmkfnfa3fjj2.apps.googleusercontent.com",
           "client_type": 3
+        },
+        {
+          "client_id": "470940302605-o70is19rabtpobj12u4hlmkfnfa3fjj2.apps.googleusercontent.com",
+          "client_type": 3
         }
       ],
       "api_key": [
@@ -65,6 +69,10 @@
             "package_name": "com.example.filippotessaro.cipnote",
             "certificate_hash": "aad7285b959de2e4c4a9a45fa2f1f68b4943697b"
           }
+        },
+        {
+          "client_id": "470940302605-o70is19rabtpobj12u4hlmkfnfa3fjj2.apps.googleusercontent.com",
+          "client_type": 3
         },
         {
           "client_id": "470940302605-o70is19rabtpobj12u4hlmkfnfa3fjj2.apps.googleusercontent.com",
