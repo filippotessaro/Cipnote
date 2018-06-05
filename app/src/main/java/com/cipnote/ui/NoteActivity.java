@@ -41,6 +41,7 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+import com.google.gson.Gson;
 import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 import com.transitionseverywhere.*;
 
@@ -70,6 +71,7 @@ import com.flask.colorpicker.builder.ColorPickerDialogBuilder;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
@@ -441,8 +443,7 @@ public class NoteActivity extends AppCompatActivity
         findViewById(R.id.startCamera).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(NoteActivity.this, PhotoActivity.class);
-                startActivityForResult(intent, PHOTO_REQUEST_CODE);
+                openCameraActivity();
             }
         });
         findViewById(R.id.checkbox_Image).setOnClickListener(new View.OnClickListener() {
@@ -457,7 +458,7 @@ public class NoteActivity extends AppCompatActivity
             @Override
             public void onClick(View v) {
                 Log.i(TAG, "Text Entities inizializzato");
-                addTextSticker();
+                addTextSticker("");
             }
         });
 
@@ -613,9 +614,9 @@ public class NoteActivity extends AppCompatActivity
         }
     }
 
-    protected void addTextSticker() {
+    protected void addTextSticker(String content) {
 
-        TextLayer textLayer = createTextLayer();
+        TextLayer textLayer = createTextLayer(content);
         TextEntity textEntity = new TextEntity(textLayer, motionView.getWidth(),
                 motionView.getHeight(), fontProvider);
         motionView.addEntityAndPosition(textEntity);
@@ -630,7 +631,7 @@ public class NoteActivity extends AppCompatActivity
         startTextEntityEditing();
     }
 
-    private TextLayer createTextLayer() {
+    private TextLayer createTextLayer(String text) {
         TextLayer textLayer = new TextLayer();
         Font font = new Font();
 
@@ -641,7 +642,7 @@ public class NoteActivity extends AppCompatActivity
         textLayer.setFont(font);
 
         if (BuildConfig.DEBUG) {
-            textLayer.setText("");
+            textLayer.setText(text);
         }
 
         return textLayer;
@@ -877,13 +878,13 @@ public class NoteActivity extends AppCompatActivity
 
         for (int i = 0; i < l.size(); i++){
             if(l.get(i) instanceof TextEntity){
-                deg = (int) l.get(0).getLayer().getRotationInDegrees();
-                x = l.get(0).getLayer().getX();
-                y = l.get(0).getLayer().getY();
-                scale = l.get(0).getLayer().getScale();
-                font  = ((TextEntity)l.get(0)).getLayer().getFont().getTypeface();
-                color = ((TextEntity)l.get(0)).getLayer().getFont().getColor();
-                contentText = ((TextEntity)l.get(0)).getLayer().getText();
+                deg = (int) l.get(i).getLayer().getRotationInDegrees();
+                x = l.get(i).getLayer().getX();
+                y = l.get(i).getLayer().getY();
+                scale = l.get(i).getLayer().getScale();
+                font  = ((TextEntity)l.get(i)).getLayer().getFont().getTypeface();
+                color = ((TextEntity)l.get(i)).getLayer().getFont().getColor();
+                contentText = ((TextEntity)l.get(i)).getLayer().getText();
                 TextEntityData t = new TextEntityData(x, y,contentText,font, deg,scale, color);
                 n.addTextElement(t);
             } else {
@@ -909,17 +910,58 @@ public class NoteActivity extends AppCompatActivity
 
     @Override
     public void onResult(AIResponse response) {
-        Result result = response.getResult();
-        // Get parameters
-        String parameterString = "";
-        if (result.getParameters() != null && !result.getParameters().isEmpty()) {
-            for (final Map.Entry<String, JsonElement> entry : result.getParameters().entrySet()) {
-                parameterString += "(" + entry.getKey() + ", " + entry.getValue() + ") ";
-            }
+        final Result result = response.getResult();
+        final HashMap<String, JsonElement> params = result.getParameters();
+        String action = "";
+        String condition = "";
+
+        if(params.get("action") != null){
+            action = params.get("action").getAsString();
         }
-        Log.i(TAG,"Query:" + result.getResolvedQuery() +
-                "\nAction: " + result.getAction() +
-                "\nParameters: " + parameterString);
+        if(params.get("condition")!= null){
+            condition = params.get("condition").getAsString();
+        }
+
+        Log.i("DIALOG",action);
+        switch(action){
+            case "addtext":
+                if(params.get("condition")!= null){
+                    if(result.getResolvedQuery().contains("con scritto")){
+                        String[] split = result.getResolvedQuery().split("con scritto");
+                        addTextSticker(split[1]);
+
+                    } else if(result.getResolvedQuery().contains("con ")){
+                        String[] split = result.getResolvedQuery().split("con ");
+                        addTextSticker(split[1]);
+                    }
+                } else if (result.getResolvedQuery().contains("scrivi ")){
+
+                    String[] split = result.getResolvedQuery().split("scrivi ");
+                    addTextSticker(split[1]);
+                } else if (result.getResolvedQuery().contains("Scrivi ")){
+
+                    String[] split = result.getResolvedQuery().split("Scrivi ");
+                    addTextSticker(split[1]);
+                }
+
+                break;
+            case "camera":
+                openCameraActivity();
+                break;
+            case "events":
+                //TODO crea evento
+                break;
+            case "sticker":
+                Intent intent = new Intent(NoteActivity.this, StickerSelectActivity.class);
+                startActivityForResult(intent, SELECT_STICKER_REQUEST_CODE);
+                break;
+            default:
+                Log.i(TAG,"No action");
+                //TODO crea testo con query result
+                addTextSticker(result.getResolvedQuery());
+                break;
+
+        }
     }
 
     @Override
@@ -946,5 +988,11 @@ public class NoteActivity extends AppCompatActivity
     public void onListeningFinished() {
         progressRecordBar.setIndeterminate(false);
         progressRecordBar.setVisibility(View.GONE);
+    }
+
+    public void openCameraActivity(){
+        Log.i(TAG,"open camera activity");
+        Intent intent = new Intent(NoteActivity.this, PhotoActivity.class);
+        startActivityForResult(intent, PHOTO_REQUEST_CODE);
     }
 }
