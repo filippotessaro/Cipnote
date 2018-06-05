@@ -35,21 +35,27 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".login.MainActivity">
+        <activity android:name=".login.MainActivity"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
         <activity
             android:name=".ui.StickerSelectActivity"
-            android:label="Add_sticker"></activity>
-        <activity android:name=".profile.ProfileActivity" />
-        <activity android:name=".camera.PhotoActivity" />
-        <activity android:name=".camera.CameraPermissionActivity" />
-        <activity android:name=".camera.PhotoRedirectActivity" />
-        <activity android:name=".ui.NoteActivity" />
+            android:label="Add_sticker"
+            android:screenOrientation="portrait"></activity>
+        <activity android:name=".profile.ProfileActivity"
+            android:screenOrientation="portrait"/>
+        <activity android:name=".camera.PhotoActivity"
+            android:screenOrientation="portrait"/>
+        <activity android:name=".camera.CameraPermissionActivity"
+            android:screenOrientation="portrait"/>
+        <activity android:name=".camera.PhotoRedirectActivity"
+            android:screenOrientation="portrait"/>
+        <activity android:name=".ui.NoteActivity"
+            android:screenOrientation="portrait"/>
     </application>
 
 </manifest>

@@ -4,7 +4,6 @@ import android.Manifest;
 import android.annotation.TargetApi;
 import android.app.Dialog;
 import android.app.ProgressDialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -16,23 +15,22 @@ import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
 import android.support.constraint.ConstraintLayout;
-import android.support.v4.view.MotionEventCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 
-import com.cipnote.camera.CameraPermissionActivity;
 import com.cipnote.camera.PhotoActivity;
 import com.cipnote.camera.RunTimePermission;
 import com.cipnote.data.NoteEntityData;
 import com.cipnote.data.TextEntityData;
-import com.cipnote.multitouch.MoveGestureDetector;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -43,6 +41,7 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 import com.transitionseverywhere.*;
 
 import android.util.DisplayMetrics;
@@ -52,16 +51,14 @@ import android.view.GestureDetector.OnGestureListener;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
-import android.view.ScaleGestureDetector;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
-import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -105,6 +102,7 @@ public class NoteActivity extends AppCompatActivity
 
     //Variabile per apertura popup nella modifica dello spessore del tratto di disegno
     Dialog strokeDialog;
+    private RunTimePermission runTimePermission;
 
     //Variabile per creare Log all interno della Main Activity
     private static final String TAG = "MyActivity";
@@ -142,17 +140,18 @@ public class NoteActivity extends AppCompatActivity
     protected TextView text_scroll_view;
     protected ImageButton modify_scroll_view;
 
-    private File folder = null;
-
     //Inizializzaizone DialogFlow
     private AIService aiService;
+
+    private String userId ;
+    private SlidingUpPanelLayout d;
 
 
     private final MotionView.MotionViewCallback motionViewCallback =
             new MotionView.MotionViewCallback() {
         @Override
         public void onEntitySelected(@Nullable MotionEntity entity) {
-            if (entity instanceof TextEntity) {
+            if (entity instanceof TextEntity ) {
                 Log.i(TAG, "VISIBLE");
                 Log.i(TAG, "Remove menu Panel");
                 TransitionManager.beginDelayedTransition(transitionMainViewContainer);
@@ -171,13 +170,34 @@ public class NoteActivity extends AppCompatActivity
             startTextEntityEditing();
         }
     };
-
+    private ProgressBar progressRecordBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_note);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+//        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
+
+        FirebaseUser currentFirebaseUser = FirebaseAuth.getInstance().getCurrentUser() ;
+        userId = currentFirebaseUser.getUid();
+        Log.i(TAG,"UserId: " + userId);
+
+        runTimePermission = new RunTimePermission(this);
+        runTimePermission.requestPermission(new String[]{
+                Manifest.permission.RECORD_AUDIO
+        }, new RunTimePermission.RunTimePermissionListener() {
+
+            @Override
+            public void permissionGranted() {
+                // First we need to check availability of play services
+            }
+
+            @Override
+            public void permissionDenied() {
+                finish();
+            }
+        });
 
 
         //Inizializzazione Firebase
@@ -226,110 +246,19 @@ public class NoteActivity extends AppCompatActivity
         initShowHideElement();
         initScrollViewElements();
 
+//        d= findViewById(R.id.sliding_layout);
+//        d.setPanelState(SlidingUpPanelLayout.PanelState.EXPANDED);
+//        Log.i(TAG,""+d.getPanelState());
 
-        final GestureDetector gd = new GestureDetector(this,new OnGestureListener() {
-            @Override
-            public boolean onSingleTapUp(MotionEvent e) {
-                Log.i("Single","Single Tap");
-                // TODO Auto-generated method stub
+    }
 
-                return false;
-            }
-
-            @Override
-            public void onShowPress(MotionEvent e) {
-                // TODO Auto-generated method stub
-
-            }
-
-            @Override
-            public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX,
-                                    float distanceY) {
-                // TODO Auto-generated method stub
-                return false;
-            }
-
-            @Override
-            public void onLongPress(MotionEvent e) {
-                // TODO Auto-generated method stub
-
-            }
-
-            @Override
-            public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX,
-                                   float velocityY) {
-                // TODO Auto-generated method stub
-                return false;
-            }
-
-            @Override
-            public boolean onDown(MotionEvent e) {
-                // TODO Auto-generated method stub
-                return false;
-            }
-        });
-
-        // set the on Double tap listener
-        gd.setOnDoubleTapListener(new GestureDetector.OnDoubleTapListener() {
-            @Override
-            public boolean onDoubleTap(MotionEvent e) {
-                Toast.makeText(NoteActivity.this,"Double Tap",Toast.LENGTH_LONG).show();
-                return false;
-            }
-
-            @Override
-            public boolean onDoubleTapEvent(MotionEvent e) {
-                // if the second tap hadn't been released and it's being moved
-                Log.i("TAP", "Doppio tap riconosciuto!");
-                return false;
-            }
-
-            @Override
-            public boolean onSingleTapConfirmed(MotionEvent e) {
-                // TODO Auto-generated method stub
-                return false;
-            }
-
-        });
-
-        findViewById(R.id.addEvent).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                TextView textView = new TextView(getApplicationContext());
-                textView.setText("Ciao Fabio");
-                textView.setTextSize(25);
-                textView.setBackgroundColor(R.drawable.button_background);
-                textView.setGravity(Gravity.CENTER);
-
-//                textView.setOnTouchListener(new View.OnTouchListener() {
-//
-//                    @Override
-//                    public boolean onTouch(View v, MotionEvent event) {
-//
-//                        if (event.getAction() == MotionEvent.ACTION_MOVE) {
-//                            // Offsets are for centering the TextView on the touch location
-//                            v.setX(event.getRawX() - v.getWidth() / 2.0f);
-//                            v.setY(event.getRawY() - v.getHeight() / 2.0f);
-//                        }
-//
-//                        return true;
-//                        //TODO implementa il doppio click per abilitare lo spostamento
-//                    }
-//
-//                });
-
-                textView.setOnTouchListener(new View.OnTouchListener() {
-
-                    @Override
-                    public boolean onTouch(View v, MotionEvent event) {
-                        // TODO Auto-generated method stub
-                        gd.onTouchEvent(event);
-                        return true;
-                    }
-                });
-                MainLayout.addView(textView);
-            }
-        });
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
+        if(runTimePermission!=null){
+            runTimePermission.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        }
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 
     }
 
@@ -361,10 +290,16 @@ public class NoteActivity extends AppCompatActivity
     private void initShowHideElement(){
         saveNoteButton = findViewById(R.id.saveNoteButton);
         recordButton = findViewById(R.id.recordButton);
+        progressRecordBar = (ProgressBar) findViewById(R.id.progressRecordBar);
         recordButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
                 aiService.startListening();
+                progressRecordBar.setVisibility(View.VISIBLE);
+                progressRecordBar.bringToFront();
+                progressRecordBar.setIndeterminate(true);
+
             }
         });
 
@@ -372,7 +307,7 @@ public class NoteActivity extends AppCompatActivity
         deleteNoteButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //getAllEntities();
+                deleteAll();
             }
         });
     }
@@ -500,6 +435,8 @@ public class NoteActivity extends AppCompatActivity
     //Inizializza gli eventListener del menu di creazione degli elementi della nota
     private void initEditMenuEntitiesListeners() {
         editTextTitle = (EditText)findViewById(R.id.editTextTitle);
+        editTextTitle.bringToFront();
+
 
         findViewById(R.id.startCamera).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -857,6 +794,10 @@ public class NoteActivity extends AppCompatActivity
 
     }
 
+    private void deleteAll(){
+
+    }
+
     private void getAllEntities(){
 
         //Algoritmo per ripristinare le text entities
@@ -926,7 +867,7 @@ public class NoteActivity extends AppCompatActivity
         //Algoritmo per ripristinare le text entities
         List<MotionEntity> l = motionView.getEntities();
 
-        NoteEntityData n = new NoteEntityData("", "jLCqygWwccVyD6a8slzqX2j2unq2" , editTextTitle.getText().toString(), "descrizionfhkjfhfkjf");
+        NoteEntityData n = new NoteEntityData("", userId , editTextTitle.getText().toString(), "descrizionfhkjfhfkjf");
         int deg= 0;
         float x = 0;
         float y = 0;
@@ -942,7 +883,6 @@ public class NoteActivity extends AppCompatActivity
                 scale = l.get(0).getLayer().getScale();
                 font  = ((TextEntity)l.get(0)).getLayer().getFont().getTypeface();
                 color = ((TextEntity)l.get(0)).getLayer().getFont().getColor();
-                //Log.i(TAG, ""+ ((TextEntity)l.get(0)).getLayer().getFont().getColor());
                 contentText = ((TextEntity)l.get(0)).getLayer().getText();
                 TextEntityData t = new TextEntityData(x, y,contentText,font, deg,scale, color);
                 n.addTextElement(t);
@@ -952,7 +892,7 @@ public class NoteActivity extends AppCompatActivity
 
 
         }
-        String userId = "jLCqygWwccVyD6a8slzqX2j2unq2";
+
 
         try{
             String child = dbTextNotes.push().getKey();
@@ -965,14 +905,11 @@ public class NoteActivity extends AppCompatActivity
 
 
 
-
-
     }
 
     @Override
     public void onResult(AIResponse response) {
         Result result = response.getResult();
-
         // Get parameters
         String parameterString = "";
         if (result.getParameters() != null && !result.getParameters().isEmpty()) {
@@ -980,7 +917,9 @@ public class NoteActivity extends AppCompatActivity
                 parameterString += "(" + entry.getKey() + ", " + entry.getValue() + ") ";
             }
         }
-        Log.i(TAG,"Query:" + result.getResolvedQuery());
+        Log.i(TAG,"Query:" + result.getResolvedQuery() +
+                "\nAction: " + result.getAction() +
+                "\nParameters: " + parameterString);
     }
 
     @Override
@@ -1005,6 +944,7 @@ public class NoteActivity extends AppCompatActivity
 
     @Override
     public void onListeningFinished() {
-
+        progressRecordBar.setIndeterminate(false);
+        progressRecordBar.setVisibility(View.GONE);
     }
 }
