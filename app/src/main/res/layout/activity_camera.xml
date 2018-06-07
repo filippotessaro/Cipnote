@@ -36,7 +36,9 @@
                 android:fontFamily="sans-serif-medium"
                 android:text="Gallery"
                 android:textColor="@color/white"
-                android:textSize="20sp" />
+                android:textSize="20sp"
+                android:padding="16dp"
+                android:drawableLeft="@drawable/ic_photo_library_white_24dp"/>
 
 
             <ImageView

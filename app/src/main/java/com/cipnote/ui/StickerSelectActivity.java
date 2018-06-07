@@ -78,14 +78,7 @@ public class StickerSelectActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.select_sticker_activity);
 
-        //noinspection ConstantConditions
-//        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-
-//
         RecyclerView recyclerView = (RecyclerView) findViewById(R.id.stickers_recycler_view);
-//        GridLayoutManager glm = new GridLayoutManager(this, 3);
-//        recyclerView.setLayoutManager(glm);
-
 
         recyclerView.setLayoutManager(new GridLayoutManager(this, 3));
         ItemOffsetDecoration itemDecoration = new ItemOffsetDecoration(this, R.dimen.stroke_size);

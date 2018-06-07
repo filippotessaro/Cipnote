@@ -9,6 +9,7 @@ public class NoteEntityData {
     String dateCreation, dateModification;
 
     List<TextEntityData> textEntityDataList;
+    List<ImageEntityData> imageEntityDataList;
 
     public NoteEntityData(String id, String u, String title, String description) {
         this.id = id;
@@ -19,10 +20,15 @@ public class NoteEntityData {
         dateModification = String.valueOf(System.currentTimeMillis());
 //        images = null;
         textEntityDataList = new ArrayList<TextEntityData>();
+        imageEntityDataList = new ArrayList<ImageEntityData>();
     }
 
     public void addTextElement(TextEntityData t){
         textEntityDataList.add(t);
+    }
+
+    public void addImageElement(ImageEntityData t){
+        imageEntityDataList.add(t);
     }
 
     public String getId() {
@@ -49,13 +55,6 @@ public class NoteEntityData {
         this.description = description;
     }
 
-//    public ImagesUrl getImages() {
-//        return images;
-//    }
-//
-//    public void setImages(ImagesUrl images) {
-//        this.images = images;
-//    }
 
     public String getDateCreation() {
         return dateCreation;
@@ -71,6 +70,22 @@ public class NoteEntityData {
 
     public void setDateModification(String dateModification) {
         this.dateModification = dateModification;
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
+    }
+
+    public List<ImageEntityData> getImageEntityDataList() {
+        return imageEntityDataList;
+    }
+
+    public void setImageEntityDataList(List<ImageEntityData> imageEntityDataList) {
+        this.imageEntityDataList = imageEntityDataList;
     }
 
     public List<TextEntityData> getTextEntityDataList() {

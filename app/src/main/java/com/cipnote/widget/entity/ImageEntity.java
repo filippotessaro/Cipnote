@@ -14,12 +14,14 @@ public class ImageEntity extends MotionEntity {
 
     @NonNull
     private final Bitmap bitmap;
+    private final int stickerID;
 
     public ImageEntity(@NonNull Layer layer,
                        @NonNull Bitmap bitmap,
                        @IntRange(from = 1) int canvasWidth,
-                       @IntRange(from = 1) int canvasHeight) {
+                       @IntRange(from = 1) int canvasHeight, int sticker) {
         super(layer, canvasWidth, canvasHeight);
+        stickerID = sticker;
 
         this.bitmap = bitmap;
         float width = bitmap.getWidth();
@@ -36,6 +38,10 @@ public class ImageEntity extends MotionEntity {
         srcPoints[4] = width; srcPoints[5] = height;
         srcPoints[6] = 0; srcPoints[7] = height;
         srcPoints[8] = 0; srcPoints[8] = 0;
+    }
+
+    public int getStickerID() {
+        return stickerID;
     }
 
     @Override

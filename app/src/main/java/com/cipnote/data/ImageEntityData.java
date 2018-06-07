@@ -3,11 +3,11 @@ package com.cipnote.data;
 public class ImageEntityData {
 
     private float x,y;
-    private String logo;
+    private int logo;
     private int deg;
     private float scale;
 
-    public ImageEntityData(float x, float y, String logo, int deg, float scale) {
+    public ImageEntityData(float x, float y, int logo, int deg, float scale) {
         this.x = x;
         this.y = y;
         this.logo = logo;
@@ -31,11 +31,11 @@ public class ImageEntityData {
         this.y = y;
     }
 
-    public String getLogo() {
+    public int getLogo() {
         return logo;
     }
 
-    public void setLogo(String logo) {
+    public void setLogo(int logo) {
         this.logo = logo;
     }
 

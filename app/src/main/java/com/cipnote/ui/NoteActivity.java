@@ -6,6 +6,7 @@ import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
@@ -23,8 +24,10 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 
+import com.cipnote.camera.CameraPermissionActivity;
 import com.cipnote.camera.PhotoActivity;
 import com.cipnote.camera.RunTimePermission;
+import com.cipnote.data.ImageEntityData;
 import com.cipnote.data.NoteEntityData;
 import com.cipnote.data.TextEntityData;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -508,7 +511,7 @@ public class NoteActivity extends AppCompatActivity
                 Layer layer = new Layer();
                 Bitmap pica = BitmapFactory.decodeResource(getResources(), stickerResId);
                 ImageEntity entity = new ImageEntity(layer, pica, motionView.getWidth(),
-                        motionView.getHeight());
+                        motionView.getHeight(),stickerResId);
                 motionView.addEntityAndPosition(entity);
             }
         });
@@ -875,9 +878,11 @@ public class NoteActivity extends AppCompatActivity
         float scale = 0;
         String font, contentText;
         int color;
+        int idImage = 0;
 
         for (int i = 0; i < l.size(); i++){
             if(l.get(i) instanceof TextEntity){
+                Log.i(TAG,"Text Sticker");
                 deg = (int) l.get(i).getLayer().getRotationInDegrees();
                 x = l.get(i).getLayer().getX();
                 y = l.get(i).getLayer().getY();
@@ -887,8 +892,15 @@ public class NoteActivity extends AppCompatActivity
                 contentText = ((TextEntity)l.get(i)).getLayer().getText();
                 TextEntityData t = new TextEntityData(x, y,contentText,font, deg,scale, color);
                 n.addTextElement(t);
-            } else {
-                Log.i(TAG,"Dovrebbe essere un immagine");
+            } else if (l.get(i) instanceof  ImageEntity){
+                Log.i(TAG,"Image Sticker");
+                deg = (int) l.get(i).getLayer().getRotationInDegrees();
+                x = l.get(i).getLayer().getX();
+                y = l.get(i).getLayer().getY();
+                scale = l.get(i).getLayer().getScale();
+                idImage = ((ImageEntity)l.get(i)).getStickerID();
+                ImageEntityData t = new ImageEntityData(x, y, idImage, deg, scale);
+                n.addImageElement(t);
             }
 
 
@@ -957,7 +969,6 @@ public class NoteActivity extends AppCompatActivity
                 break;
             default:
                 Log.i(TAG,"No action");
-                //TODO crea testo con query result
                 addTextSticker(result.getResolvedQuery());
                 break;
 
@@ -967,6 +978,7 @@ public class NoteActivity extends AppCompatActivity
     @Override
     public void onError(AIError error) {
         Log.i(TAG,error.toString());
+        Toast.makeText(this, "Errore con DialogFLow", Toast.LENGTH_SHORT).show();
     }
 
     @Override
@@ -992,7 +1004,15 @@ public class NoteActivity extends AppCompatActivity
 
     public void openCameraActivity(){
         Log.i(TAG,"open camera activity");
-        Intent intent = new Intent(NoteActivity.this, PhotoActivity.class);
-        startActivityForResult(intent, PHOTO_REQUEST_CODE);
+        if (ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.CAMERA)
+                == PackageManager.PERMISSION_DENIED){
+            Intent intent = new Intent(NoteActivity.this, CameraPermissionActivity.class);
+            startActivity(intent);
+
+        }else{
+            Intent intent = new Intent(NoteActivity.this, PhotoActivity.class);
+            startActivityForResult(intent, PHOTO_REQUEST_CODE);
+        }
+
     }
 }
