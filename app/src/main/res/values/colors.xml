@@ -15,7 +15,11 @@
     <color name="lightBlue">#53bce9</color>
     <color name="trans">#00000000 </color>
     <color name="darkGray">#424242</color>
-    <color name="white">#FFFFFF</color>
+    <color name="white">#ffffff</color>
     <color name="orange">#e99e53</color>
+
+
+    <!-- Color Dialog Time Picker-->
+    <color name="CyanWater">#09b6b3</color>
 
 </resources>

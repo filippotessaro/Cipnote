@@ -23,6 +23,11 @@ public class NoteEntityData {
         imageEntityDataList = new ArrayList<ImageEntityData>();
     }
 
+    public NoteEntityData() {
+        textEntityDataList = new ArrayList<TextEntityData>();
+        imageEntityDataList = new ArrayList<ImageEntityData>();
+    }
+
     public void addTextElement(TextEntityData t){
         textEntityDataList.add(t);
     }

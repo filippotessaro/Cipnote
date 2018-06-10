@@ -9,6 +9,10 @@ public class TextEntityData {
     private float scale;
     private int color;
 
+    public TextEntityData() {
+
+    }
+
     public TextEntityData(float x, float y, String text, String font, int deg, float scale, int c) {
         this.x = x;
         this.y = y;

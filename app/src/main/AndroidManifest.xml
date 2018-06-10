@@ -11,18 +11,18 @@
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.WRITE_CALENDAR" />
+    <uses-permission android:name="android.permission.READ_CALENDAR" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.hardware.camera.autofocus" />
-
     <uses-feature android:name="android.hardware.camera" />
     <uses-feature android:name="android.hardware.camera.flash" />
     <uses-feature android:name="android.hardware.camera.front" />
     <uses-feature android:name="android.hardware.camera2" />
     <uses-feature android:name="android.hardware.microphone" />
 
-    <!--DIALOG FLOW IMPLEMENTATION-->
-    <uses-permission android:name="android.permission.INTERNET"/>
-
+    <!-- DIALOG FLOW IMPLEMENTATION -->
+    <uses-permission android:name="android.permission.INTERNET" />
 
     <uses-feature
         android:name="android.hardware.camera.autofocus"
@@ -35,27 +35,35 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".login.MainActivity"
+        <activity
+            android:name=".login.MainActivity"
             android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
         <activity
             android:name=".ui.StickerSelectActivity"
             android:label="Add_sticker"
-            android:screenOrientation="portrait"></activity>
-        <activity android:name=".profile.ProfileActivity"
-            android:screenOrientation="portrait"/>
-        <activity android:name=".camera.PhotoActivity"
-            android:screenOrientation="portrait"/>
-        <activity android:name=".camera.CameraPermissionActivity"
-            android:screenOrientation="portrait"/>
-        <activity android:name=".camera.PhotoRedirectActivity"
-            android:screenOrientation="portrait"/>
-        <activity android:name=".ui.NoteActivity"
-            android:screenOrientation="portrait"/>
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".profile.ProfileActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".camera.PhotoActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".camera.CameraPermissionActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".camera.PhotoRedirectActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".ui.NoteActivity"
+            android:screenOrientation="portrait" />
+        <activity android:name=".ui.NoteListActivity"></activity>
     </application>
 
 </manifest>

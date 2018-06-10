@@ -1,9 +1,15 @@
 package com.cipnote.ui;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
+import android.app.DatePickerDialog;
 import android.app.Dialog;
+import android.app.FragmentManager;
 import android.app.ProgressDialog;
+import android.content.ContentResolver;
+import android.content.ContentUris;
+import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -14,16 +20,20 @@ import android.graphics.PointF;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.CalendarContract;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
 import android.support.constraint.ConstraintLayout;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 
+import com.cipnote.Calendar.RangeTimePickerDialog;
 import com.cipnote.camera.CameraPermissionActivity;
 import com.cipnote.camera.PhotoActivity;
 import com.cipnote.camera.RunTimePermission;
@@ -48,6 +58,9 @@ import com.google.gson.Gson;
 import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 import com.transitionseverywhere.*;
 
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.text.Html;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.GestureDetector;
@@ -59,10 +72,14 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -74,8 +91,12 @@ import com.flask.colorpicker.builder.ColorPickerDialogBuilder;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
 
 import com.cipnote.BuildConfig;
@@ -103,7 +124,7 @@ import java.util.Map;
 
 
 public class NoteActivity extends AppCompatActivity
-        implements TextEditorDialogFragment.OnTextLayerCallback, AIListener {
+        implements TextEditorDialogFragment.OnTextLayerCallback, AIListener, RangeTimePickerDialog.ISelectedTime {
 
     //Variabile per apertura popup nella modifica dello spessore del tratto di disegno
     Dialog strokeDialog;
@@ -133,7 +154,7 @@ public class NoteActivity extends AppCompatActivity
     private FontProvider fontProvider;
     private ViewGroup transitionMainViewContainer;
     private LinearLayout verticalEditMenu;
-    private EditText editTextTitle;
+    private EditText editTextTitle, titleCalendar;
 
     //ELEMENTI DA NASCONDERE (ESCLUSO MENU VERTICALE)
     protected Button saveNoteButton;
@@ -142,8 +163,26 @@ public class NoteActivity extends AppCompatActivity
 
     //Scroll View
     protected EditText edit_text_scroll_view;
-    protected TextView text_scroll_view;
-    protected ImageButton modify_scroll_view;
+    protected TextView text_scroll_view, text_date, text_time_start, text_time_end;
+    protected ImageButton modify_scroll_view, add_check_box;
+
+    //Calendar
+    private Calendar myCalendarStart = Calendar.getInstance();
+    private Calendar myCalendarEnd = Calendar.getInstance();
+    private boolean check, checkbox;
+    private CheckBox checkBoxDay;
+    String stringTitleCalendar, stringDescription;
+    private EditText txt_description, edit_text_checkbox;
+
+    private GestureDetector gd;
+    private Uri uri;
+    private TextView calendarSticker;
+
+    private ArrayList<RowItem> list_checkbox = new ArrayList<RowItem>();
+    private ListView lst_check;
+    private ListAdapter customAdapter;
+    private String textCheckbox;
+
 
     //Inizializzaizone DialogFlow
     private AIService aiService;
@@ -182,7 +221,6 @@ public class NoteActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_note);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
-//        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
 
         FirebaseUser currentFirebaseUser = FirebaseAuth.getInstance().getCurrentUser() ;
         userId = currentFirebaseUser.getUid();
@@ -255,6 +293,73 @@ public class NoteActivity extends AppCompatActivity
 //        d.setPanelState(SlidingUpPanelLayout.PanelState.EXPANDED);
 //        Log.i(TAG,""+d.getPanelState());
 
+        //----------------CALENDAR--------------
+        gd = new GestureDetector(this,new OnGestureListener() {
+            @Override
+            public boolean onSingleTapUp(MotionEvent e) {
+                Log.i("Single","Single Tap");
+                // TODO Auto-generated method stub
+
+                return false;
+            }
+
+            @Override
+            public void onShowPress(MotionEvent e) {
+                // TODO Auto-generated method stub
+
+            }
+
+            @Override
+            public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX,
+                                    float distanceY) {
+                // TODO Auto-generated method stub
+                return false;
+            }
+
+            @Override
+            public void onLongPress(MotionEvent e) {
+                // TODO Auto-generated method stub
+
+            }
+
+            @Override
+            public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX,
+                                   float velocityY) {
+                // TODO Auto-generated method stub
+                return false;
+            }
+
+            @Override
+            public boolean onDown(MotionEvent e) {
+                // TODO Auto-generated method stub
+                return false;
+            }
+        });
+
+        // set the on Double tap listener
+        gd.setOnDoubleTapListener(new GestureDetector.OnDoubleTapListener() {
+            @Override
+            public boolean onDoubleTap(MotionEvent e) {
+                Toast.makeText(NoteActivity.this,"Double Tap",Toast.LENGTH_LONG).show();
+                return false;
+            }
+
+            @Override
+            public boolean onDoubleTapEvent(MotionEvent e) {
+                // if the second tap hadn't been released and it's being moved
+                Log.i("TAP", "Doppio tap riconosciuto!");
+                PutIntoCalendar(motionView, "u");
+                return false;
+            }
+
+            @Override
+            public boolean onSingleTapConfirmed(MotionEvent e) {
+                // TODO Auto-generated method stub
+                return false;
+            }
+
+        });
+
     }
 
     @Override
@@ -290,6 +395,8 @@ public class NoteActivity extends AppCompatActivity
             }
         });
 
+
+
     }
 
     private void initShowHideElement(){
@@ -312,7 +419,8 @@ public class NoteActivity extends AppCompatActivity
         deleteNoteButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                deleteAll();
+//                deleteAll();
+                getAllEntities();
             }
         });
     }
@@ -465,6 +573,14 @@ public class NoteActivity extends AppCompatActivity
             }
         });
 
+        add_check_box = findViewById(R.id.add_check_box);
+        add_check_box.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                AddCheckBox(v);
+            }
+        });
+
         //Cambio background color usando e agiornando il color index e lo String Array
         findViewById(R.id.change_background_color).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -500,6 +616,30 @@ public class NoteActivity extends AppCompatActivity
                 paintView.bringToFront();
                 findViewById(R.id.main_motion_draw_entity_edit_panel).setVisibility(View.VISIBLE);
                 findViewById(R.id.main_motion_draw_entity_edit_panel).bringToFront();
+            }
+        });
+
+        findViewById(R.id.load_calendar).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(final View v) {
+
+                RunTimePermission runTimePermission = new RunTimePermission(
+                        NoteActivity.this);
+                runTimePermission.requestPermission(new String[]{
+                        Manifest.permission.WRITE_CALENDAR,
+                        Manifest.permission.READ_CALENDAR
+                }, new RunTimePermission.RunTimePermissionListener() {
+
+                    @Override
+                    public void permissionGranted() {
+                        Toast.makeText(NoteActivity.this, "Permission OK",
+                                Toast.LENGTH_SHORT).show();
+                        PutIntoCalendar(v,"a");
+                    }
+
+                    @Override
+                    public void permissionDenied() { finish(); }
+                });
             }
         });
     }
@@ -804,52 +944,53 @@ public class NoteActivity extends AppCompatActivity
 
     private void getAllEntities(){
 
-        //Algoritmo per ripristinare le text entities
-        List<MotionEntity> l = motionView.getEntities();
-//        Log.i(TAG,""+ l.size());
-        if(l.size()>=1){
-            Log.i(TAG, "" + l.get(0).getLayer().getRotationInDegrees());
-            Log.i(TAG, "x: "+ l.get(0).getLayer().getX());
-            Log.i(TAG, "y: "+ l.get(0).getLayer().getY());
-            Log.i(TAG, "Scale: "+ l.get(0).getLayer().getScale());
-            TextEntity textEntity = (TextEntity) l.get(0);
-            Log.i(TAG, "Text: "+ textEntity.getLayer().getText());
-            Log.i(TAG, "Size Font: "+ textEntity.getLayer().getFont().getTypeface());
-            Log.i(TAG, "Size Font: "+ textEntity.getLayer().getFont().getSize());
-
-        }
-
-        final List<String> fonts = fontProvider.getFontNames();
-        String searchString = "Lato";
-        int index = -1;
-        for (int i=0;i<fonts.size();i++) {
-            if (fonts.get(i).equals(searchString)) {
-                index = i;
-                break;
-            }
-        }
-
-        TextEntity t = (TextEntity) l.get(0);
-        t.getLayer().setX((float) -0.02777778);
-        t.getLayer().setY((float) 0.72161454);
-        t.getLayer().getFont().setTypeface(fonts.get(index));
-        t.updateEntity();
-        t.getLayer().setRotationInDegrees(45);
+//        //Algoritmo per ripristinare le text entities
+//        List<MotionEntity> l = motionView.getEntities();
+////        Log.i(TAG,""+ l.size());
+//        if(l.size()>=1){
+//            Log.i(TAG, "" + l.get(0).getLayer().getRotationInDegrees());
+//            Log.i(TAG, "x: "+ l.get(0).getLayer().getX());
+//            Log.i(TAG, "y: "+ l.get(0).getLayer().getY());
+//            Log.i(TAG, "Scale: "+ l.get(0).getLayer().getScale());
+//            TextEntity textEntity = (TextEntity) l.get(0);
+//            Log.i(TAG, "Text: "+ textEntity.getLayer().getText());
+//            Log.i(TAG, "Size Font: "+ textEntity.getLayer().getFont().getTypeface());
+//            Log.i(TAG, "Size Font: "+ textEntity.getLayer().getFont().getSize());
+//
+//        }
+//
+//        final List<String> fonts = fontProvider.getFontNames();
+//        String searchString = "Lato";
+//        int index = -1;
+//        for (int i=0;i<fonts.size();i++) {
+//            if (fonts.get(i).equals(searchString)) {
+//                index = i;
+//                break;
+//            }
+//        }
+//
+//        TextEntity t = (TextEntity) l.get(0);
+//        t.getLayer().setX((float) -0.02777778);
+//        t.getLayer().setY((float) 0.72161454);
+//        t.getLayer().getFont().setTypeface(fonts.get(index));
+//        t.updateEntity();
+//        t.getLayer().setRotationInDegrees(45);
 
         String id = "jLCqygWwccVyD6a8slzqX2j2unq2";
-        String child = dbTextNotes.push().getKey();
+//        String child = dbTextNotes.push().getKey();
 //        TextEntityData te = new TextEntityData(id,(float) -0.02777778,(float) 0.72161454, t.getLayer().getText(), "Lato" , 45,t.getLayer().getScale() );
 //        dbTextNotes.child(child).setValue(te);
-        Toast.makeText(this, "Note Added", Toast.LENGTH_SHORT).show();
+//        Toast.makeText(this, "Note Added", Toast.LENGTH_SHORT).show();
         //Algoritmo per ripristinare le Sticker entity
 //        ImageEntity pica = (ImageEntity)l.get(1);
 //        pica.getLayer().setX((float) -0.02777778);
 //        pica.getLayer().setY((float) 0.72161454);
 
-        Query query = dbTextNotes.orderByChild("id").equalTo(id);
+        Query query = dbTextNotes.orderByChild("userId").equalTo(id);
         query.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot snapshot) {
+                Log.i("CHeck","ENTRATO");
                 for (DataSnapshot user: snapshot.getChildren()) {
                     Log.i(TAG,user.toString());
                 }
@@ -863,7 +1004,7 @@ public class NoteActivity extends AppCompatActivity
 
 
 
-        motionView.invalidate();
+//        motionView.invalidate();
 
     }
 
@@ -914,6 +1055,9 @@ public class NoteActivity extends AppCompatActivity
             Toast.makeText(this, "Note Added", Toast.LENGTH_SHORT).show();
         }catch(Exception e){
             Toast.makeText(this, "Problem with Connection", Toast.LENGTH_SHORT).show();
+        }finally {
+            Intent intent = new Intent(NoteActivity.this, NoteListActivity.class);
+            startActivity(intent);
         }
 
 
@@ -1015,4 +1159,418 @@ public class NoteActivity extends AppCompatActivity
         }
 
     }
+
+    private void AddCheckBox(View v) {
+        final LayoutInflater inflater = getLayoutInflater();
+        final View alertLayoutCalendar = inflater.inflate(R.layout.popup_checkbox, null);
+
+        final AlertDialog.Builder alert = new AlertDialog.Builder(v.getContext());
+        // this is set the view from XML inside AlertDialog
+        alert.setView(alertLayoutCalendar);
+        // disallow cancel of AlertDialog on click of back button and outside touch
+        alert.setCancelable(false);
+
+        edit_text_checkbox = alertLayoutCalendar.findViewById(R.id.edit_text_checkbox);
+
+        //DONE BUTTON
+        alert.setPositiveButton("Done", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+
+                textCheckbox = edit_text_checkbox.getText().toString();
+
+                if(textCheckbox.equals("")) {
+                    Toast.makeText(NoteActivity.this,"Errore nella digitazione",
+                            Toast.LENGTH_SHORT).show();
+                }
+                else {
+                    list_checkbox.add(new RowItem(false,textCheckbox));
+                    UpdateCheckboxList();
+                }
+                dialog.dismiss();
+            }
+        });
+
+        //CANCEL BUTTON
+        alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+            }
+        });
+
+        AlertDialog dialog = alert.create();
+        dialog.show();
+    }
+
+    private void UpdateCheckboxList() {
+
+        final RowItem rowItem = new RowItem(false, textCheckbox);
+        Toast.makeText(NoteActivity.this, textCheckbox, Toast.LENGTH_SHORT).show();
+
+        //To show at least one row
+        if (list_checkbox == null || list_checkbox.size() == 0) {
+            list_checkbox = new ArrayList<>();
+            list_checkbox.add(rowItem);
+        }
+
+        final RecyclerView recyclerView = findViewById(R.id.rv);
+        customAdapter = new ListAdapter(list_checkbox, this);
+
+        final LinearLayoutManager llm = new LinearLayoutManager(this);
+
+        recyclerView.setAdapter(customAdapter);
+        customAdapter.notifyDataSetChanged();
+        recyclerView.setLayoutManager(llm);
+
+       /* recyclerView.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                gestureDetector.onTouchEvent(event);
+                return true;
+            }
+
+            private GestureDetector gestureDetector = new GestureDetector(NoteActivity.this,
+                    new GestureDetector.SimpleOnGestureListener() {
+                @Override
+                public boolean onDoubleTap(MotionEvent e) {
+                    Log.d(TAG, "onDoubleTap");
+                    return super.onDoubleTap(e);
+
+                }
+            });
+        });*/
+    }
+
+
+    @TargetApi(Build.VERSION_CODES.N)
+    private void PutIntoCalendar(View v, final String s) {
+
+        final LayoutInflater inflater = getLayoutInflater();
+        final View alertLayoutCalendar = inflater.inflate(R.layout.popup_calendar, null);
+
+        final AlertDialog.Builder alert = new AlertDialog.Builder(v.getContext());
+        if(s.equals("a"))
+            alert.setTitle("Aggiungi Evento al Calendario");
+        else
+            alert.setTitle("Modifica Evento al Calendario");
+        // this is set the view from XML inside AlertDialog
+        alert.setView(alertLayoutCalendar);
+        // disallow cancel of AlertDialog on click of back button and outside touch
+        alert.setCancelable(false);
+
+        final RelativeLayout layoutButtonTime = alertLayoutCalendar.findViewById(R.id.layout_btn_time);
+        final RelativeLayout layoutTimeView = alertLayoutCalendar.findViewById(R.id.layout_time_view);
+
+        titleCalendar = alertLayoutCalendar.findViewById(R.id.edit_text_title_calendar);
+        text_date = alertLayoutCalendar.findViewById(R.id.txt_date);
+        text_time_start = alertLayoutCalendar.findViewById(R.id.txt_time_start);
+        text_time_end = alertLayoutCalendar.findViewById(R.id.txt_time_end);
+        txt_description = alertLayoutCalendar.findViewById(R.id.txt_description);
+
+        if(s.equals("u")) {
+
+            titleCalendar.setText(stringTitleCalendar);
+            txt_description.setText(stringDescription);
+            SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy", Locale.ITALY);
+            text_date.setText(dateFormat.format(myCalendarStart.getTime()));
+
+            checkBoxDay = alertLayoutCalendar.findViewById(R.id.cb_day);
+            if(checkbox == true) {
+                checkBoxDay.setChecked(true);
+                layoutButtonTime.setVisibility(alertLayoutCalendar.INVISIBLE);
+                layoutTimeView.setVisibility(alertLayoutCalendar.INVISIBLE);
+            }
+            else {
+                SimpleDateFormat timeFormat = new SimpleDateFormat("hh:mm");
+                text_time_start.setText(timeFormat.format(myCalendarStart.getTime()));
+                text_time_end.setText(timeFormat.format(myCalendarEnd.getTime()));
+            }
+        }
+        else {
+            checkBoxDay = alertLayoutCalendar.findViewById(R.id.cb_day);
+        }
+
+        checkBoxDay.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (checkBoxDay.isChecked()) {
+                    layoutButtonTime.setVisibility(alertLayoutCalendar.INVISIBLE);
+                    layoutTimeView.setVisibility(alertLayoutCalendar.INVISIBLE);
+                }
+                else {
+                    layoutButtonTime.setVisibility(alertLayoutCalendar.VISIBLE);
+                    layoutTimeView.setVisibility(alertLayoutCalendar.VISIBLE);
+                }
+            }
+        });
+
+        final Button btn_setdata = alertLayoutCalendar.findViewById(R.id.btn_date);
+        final Button btn_hours = alertLayoutCalendar.findViewById(R.id.btn_time);
+
+        btn_setdata.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                SetDatePicker();
+            }
+        });
+
+        btn_hours.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                SetTimePicker();
+            }
+        });
+
+        check = true;
+
+        //DONE BUTTON
+        alert.setPositiveButton("Select", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+            }
+        });
+
+        //CANCEL BUTTON
+        alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+            }
+        });
+
+        final AlertDialog dialog = alert.create();
+        dialog.show();
+
+        //Overriding the handler immediately after show is probably a better approach than OnShowListener as described below
+        dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                if(titleCalendar.getText().toString().equals("") ||
+                        ((text_date.getText().toString()).equals("No selected data"))) {
+                    Toast.makeText(NoteActivity.this,"Impossibile aggiungere l'evento",
+                            Toast.LENGTH_SHORT).show();
+                }
+                else {
+                    if (!(checkBoxDay.isChecked())) {
+                        if((text_time_end.getText().toString().equals("No selected time")) ||
+                                ((text_time_start.getText().toString()).equals("No selected time")) ||
+                                (myCalendarStart.getTimeInMillis() > myCalendarEnd.getTimeInMillis())) {
+
+                            Toast.makeText(NoteActivity.this, "Impossibile aggiungere l'evento",
+                                    Toast.LENGTH_SHORT).show();
+
+                            check = false;
+                        }
+                        else
+                            check = true;
+                    }
+                    else
+                        check = true;
+
+                    if (check == true){
+
+                        switch (s) {
+                            case "a":
+                                AddCalendarEvent();
+                                break;
+                            case "u":
+                                UpdateCalendarEvent();
+                                break;
+                        }
+                        dialog.dismiss();
+                    }
+                }
+            }
+        });
+    }
+
+    private void SetDatePicker() {
+
+        final int mYear = Calendar.getInstance().get(Calendar.YEAR);
+        final int mMonth = Calendar.getInstance().get(Calendar.MONTH);
+        final int mDay = Calendar.getInstance().get(Calendar.DAY_OF_MONTH);
+
+        DatePickerDialog mDatePicker = new DatePickerDialog(NoteActivity.this,
+                new DatePickerDialog.OnDateSetListener() {
+                    public void onDateSet(DatePicker datepicker, int selectedyear,
+                                          int selectedmonth, int selectedday) {
+
+                        String date = selectedday + "/" + selectedmonth + "/" +selectedyear;
+                        text_date.setText(date);
+                        myCalendarStart.set(selectedyear,selectedmonth,selectedday);
+                        myCalendarEnd.set(selectedyear,selectedmonth,selectedday);
+                    }
+                }, mYear, mMonth, mDay);
+        mDatePicker.setTitle("Select Date");
+        mDatePicker.show();
+    }
+
+    private void SetTimePicker() {
+
+        RangeTimePickerDialog dialog = new RangeTimePickerDialog();
+        dialog.newInstance();
+        dialog.setIs24HourView(false);
+        dialog.setRadiusDialog(20);
+        dialog.setTextTabStart("Start");
+        dialog.setTextTabEnd("End");
+        dialog.setTextBtnPositive("Confirm");
+        dialog.setTextBtnNegative("Cancel");
+        dialog.setValidateRange(false);
+        dialog.setColorBackgroundHeader(R.color.colorPrimary);
+        dialog.setColorBackgroundTimePickerHeader(R.color.colorPrimary);
+        dialog.setColorTextButton(R.color.colorPrimaryDark);
+        FragmentManager fragmentManager = getFragmentManager();
+        dialog.show(fragmentManager, "");
+    }
+
+    @TargetApi(Build.VERSION_CODES.N)
+    @Override
+    public void onSelectedTime(int hourStart, int minuteStart, int hourEnd, int minuteEnd) {
+
+        myCalendarStart.set(Calendar.HOUR_OF_DAY, hourStart);
+        myCalendarStart.set(Calendar.MINUTE, minuteStart);
+        myCalendarEnd.set(Calendar.HOUR_OF_DAY, hourEnd);
+        myCalendarEnd.set(Calendar.MINUTE, minuteEnd);
+
+        SimpleDateFormat sdf = new SimpleDateFormat("hh:mm");
+        text_time_start.setText(sdf.format(myCalendarStart.getTime()));
+        text_time_end.setText(sdf.format(myCalendarEnd.getTime()));
+    }
+
+    private void AddCalendarEvent() {
+
+        stringTitleCalendar =  titleCalendar.getText().toString();
+        stringDescription = txt_description.getText().toString();
+
+        ContentResolver cr = getContentResolver();
+        ContentValues values = new ContentValues();
+
+        values.put(CalendarContract.Events.TITLE, stringTitleCalendar);
+        values.put(CalendarContract.Events.DESCRIPTION, stringDescription);
+        //  values.put(CalendarContract.Events.EVENT_LOCATION, "Somewhere");
+
+        if (checkBoxDay.isChecked()) {
+            myCalendarStart.set(Calendar.HOUR, 0);
+            myCalendarStart.set(Calendar.MINUTE, 0);
+            myCalendarStart.set(Calendar.SECOND, 0);
+            values.put(CalendarContract.Events.DTSTART, myCalendarStart.getTimeInMillis());
+            values.put(CalendarContract.Events.DURATION,  "PT1D");
+            values.put(CalendarContract.Events.ALL_DAY, 1);
+            checkbox = true;
+        }
+        else {
+            values.put(CalendarContract.Events.DTSTART, myCalendarStart.getTimeInMillis());
+            values.put(CalendarContract.Events.DTEND, myCalendarEnd.getTimeInMillis());
+        }
+
+        values.put(CalendarContract.Events.CALENDAR_ID, 3);
+        values.put(CalendarContract.Events.EVENT_TIMEZONE,
+                Calendar.getInstance().getTimeZone().getID());
+        if (ActivityCompat.checkSelfPermission(NoteActivity.this,
+                Manifest.permission.WRITE_CALENDAR) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
+        uri = cr.insert(CalendarContract.Events.CONTENT_URI, values);
+        AddStickerCalendar();
+        calendarSticker.bringToFront();
+    }
+
+    private void UpdateCalendarEvent() {
+
+        // get the event ID that is the last element in the Uri
+        long eventID = Long.parseLong(uri.getLastPathSegment());
+        ContentResolver cr = getContentResolver();
+        ContentValues values = new ContentValues();
+        Uri updateUri = null;
+
+        // The new title for the event
+        values.put(CalendarContract.Events.TITLE, titleCalendar.getText().toString());
+        values.put(CalendarContract.Events.DESCRIPTION, txt_description.getText().toString());
+        //  values.put(CalendarContract.Events.EVENT_LOCATION, "Somewhere");
+
+        if (checkBoxDay.isChecked()) {
+            values.put(CalendarContract.Events.ALL_DAY, 1);
+            myCalendarStart.set(Calendar.HOUR, 0);
+            myCalendarStart.set(Calendar.MINUTE, 0);
+            myCalendarStart.set(Calendar.SECOND, 0);
+            values.put(CalendarContract.Events.DTSTART, myCalendarStart.getTimeInMillis());
+            values.put(CalendarContract.Events.DURATION,  "PT1D");
+        }
+        else {
+            values.put(CalendarContract.Events.DTSTART, myCalendarStart.getTimeInMillis());
+            values.put(CalendarContract.Events.DTEND, myCalendarEnd.getTimeInMillis());
+        }
+
+        updateUri = ContentUris.withAppendedId(CalendarContract.Events.CONTENT_URI, eventID);
+
+        int rows = getContentResolver().update(updateUri, values, null, null);
+        Log.i(TAG, "Rows updated: " + rows);
+
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+        SimpleDateFormat timeFormat = new SimpleDateFormat("hh:mm");
+        String date = timeFormat.format(myCalendarStart.getTime()) + " " +
+                dateFormat.format(myCalendarStart.getTime());
+
+        String newTitle = titleCalendar.getText().toString();
+        String changeEvent ="<b>" + newTitle.toUpperCase() + "</b> " + "<br/>" + date;
+
+        calendarSticker.setText(Html.fromHtml(changeEvent));
+    }
+
+    @SuppressLint("ResourceAsColor")
+    @TargetApi(Build.VERSION_CODES.N)
+    private void AddStickerCalendar() {
+        calendarSticker = new TextView(getApplicationContext());
+
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+
+        String time = "";
+        if(!(checkbox)) {
+            SimpleDateFormat timeFormat = new SimpleDateFormat("hh:mm");
+            time = timeFormat.format(myCalendarStart.getTime());
+        }
+        else
+            time = "ALL DAY";
+
+        String date = time + " " +
+                dateFormat.format(myCalendarStart.getTime());
+
+        String sourceString = "<b>" + stringTitleCalendar.toUpperCase() + "</b> " + "<br/>" + date;
+        calendarSticker.setText(Html.fromHtml(sourceString));
+        calendarSticker.setTextSize(25);
+        //calendarSticker.setPadding(2,2,2,2);
+        calendarSticker.setTextColor(R.color.darkGray);
+        //calendarSticker.setBackground(R.drawable.button_background);
+        calendarSticker.setBackgroundResource(R.drawable.button_background);
+        //calendarSticker.setBackgroundColor(R.drawable.button_background);
+
+        calendarSticker.setGravity(Gravity.CENTER);
+        calendarSticker.bringToFront();
+
+        calendarSticker.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+
+                if (event.getAction() == MotionEvent.ACTION_MOVE) {
+                    //            Offsets are for centering the TextView on the touch location
+                    v.setX(event.getRawX() - v.getWidth() / 2.0f);
+                    v.setY(event.getRawY() - v.getHeight() / 2.0f);
+                }
+                gd.onTouchEvent(event);
+                return true;
+            }
+        });
+        MainLayout.addView(calendarSticker);
+    }
+
 }

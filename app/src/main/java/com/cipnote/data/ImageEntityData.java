@@ -7,6 +7,9 @@ public class ImageEntityData {
     private int deg;
     private float scale;
 
+    public ImageEntityData() {
+    }
+
     public ImageEntityData(float x, float y, int logo, int deg, float scale) {
         this.x = x;
         this.y = y;

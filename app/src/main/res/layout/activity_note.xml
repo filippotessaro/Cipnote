@@ -164,7 +164,6 @@
                 android:layout_weight="1"
                 android:src="@drawable/ic_check_24dp" />
 
-
         </LinearLayout>
 
         <!-- Edit Vertical Menu per editare le note -->
@@ -208,22 +207,21 @@
                 android:background="@color/transparent"
                 android:src="@drawable/ic_insert_emoticon_black_24dp" />
 
+            <!--<ImageButton-->
+            <!--android:id="@+id/todoList"-->
+            <!--android:layout_width="fill_parent"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:layout_weight="1"-->
+            <!--android:background="@color/transparent"-->
+            <!--android:src="@drawable/ic_check_box" />-->
+
             <ImageButton
-                android:id="@+id/todoList"
+
+                android:id="@+id/load_calendar"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:background="@color/colorAccent"
-                android:src="@drawable/ic_check_box" />
-
-
-            <ImageButton
-
-                android:id="@+id/addEvent"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:background="@color/colorAccent"
+                android:background="@color/transparent"
                 android:src="@drawable/ic_event_note" />
 
             <ImageButton
@@ -306,15 +304,31 @@
             android:layout_height="68dp"
             android:orientation="horizontal">
 
-            <ImageButton
-                android:id="@+id/modify_scroll_view"
+            <LinearLayout
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentLeft="true"
-                android:layout_marginTop="20dp"
-                android:layout_marginLeft="16dp"
-                android:layout_weight="1"
-                android:src="@drawable/ic_mode_edit" />
+                android:layout_height="wrap_content">
+
+                <ImageButton
+                    android:id="@+id/modify_scroll_view"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentLeft="true"
+                    android:layout_marginTop="20dp"
+                    android:layout_marginLeft="16dp"
+                    android:layout_weight="1"
+                    android:src="@drawable/ic_mode_edit" />
+
+                <ImageButton
+                    android:id="@+id/add_check_box"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentLeft="true"
+                    android:layout_marginTop="20dp"
+
+                    android:layout_weight="1"
+                    android:src="@drawable/ic_check_24dp" />
+
+            </LinearLayout>
 
         </RelativeLayout>
 
@@ -348,6 +362,17 @@
                     android:text="The standard Lorem Ipsum passage, used since the 1500 Lorem ipsum dolor sit amet."
                     android:textSize="24sp" />
 
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical">
+
+                    <android.support.v7.widget.RecyclerView
+                        android:id="@+id/rv"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
+
+                </LinearLayout>
             </LinearLayout>
         </ScrollView>
     </LinearLayout>
