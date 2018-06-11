@@ -32,7 +32,6 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-
 import com.cipnote.Calendar.RangeTimePickerDialog;
 import com.cipnote.camera.CameraPermissionActivity;
 import com.cipnote.camera.PhotoActivity;
@@ -57,7 +56,6 @@ import com.google.firebase.storage.UploadTask;
 import com.google.gson.Gson;
 import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 import com.transitionseverywhere.*;
-
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.Html;
@@ -83,11 +81,9 @@ import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import com.flask.colorpicker.ColorPickerView;
 import com.flask.colorpicker.builder.ColorPickerClickListener;
 import com.flask.colorpicker.builder.ColorPickerDialogBuilder;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -98,7 +94,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
-
 import com.cipnote.BuildConfig;
 import com.cipnote.R;
 import com.cipnote.ui.adapter.FontsAdapter;
@@ -112,7 +107,6 @@ import com.cipnote.widget.entity.ImageEntity;
 import com.cipnote.widget.entity.MotionEntity;
 import com.cipnote.widget.entity.TextEntity;
 import com.transitionseverywhere.Recolor;
-
 import ai.api.AIListener;
 import ai.api.android.AIConfiguration;
 import ai.api.android.AIService;
@@ -120,7 +114,6 @@ import ai.api.model.AIError;
 import ai.api.model.AIResponse;
 import ai.api.model.Result;
 import com.google.gson.JsonElement;
-import java.util.Map;
 
 
 public class NoteActivity extends AppCompatActivity
@@ -189,6 +182,10 @@ public class NoteActivity extends AppCompatActivity
 
     private String userId ;
     private SlidingUpPanelLayout d;
+
+    float dX;
+    float dY;
+    int lastAction;
 
 
     private final MotionView.MotionViewCallback motionViewCallback =
@@ -299,7 +296,6 @@ public class NoteActivity extends AppCompatActivity
             public boolean onSingleTapUp(MotionEvent e) {
                 Log.i("Single","Single Tap");
                 // TODO Auto-generated method stub
-
                 return false;
             }
 
@@ -340,15 +336,13 @@ public class NoteActivity extends AppCompatActivity
         gd.setOnDoubleTapListener(new GestureDetector.OnDoubleTapListener() {
             @Override
             public boolean onDoubleTap(MotionEvent e) {
-                Toast.makeText(NoteActivity.this,"Double Tap",Toast.LENGTH_LONG).show();
+                Log.i("TAP", "Doppio tap riconosciuto!");
+                PutIntoCalendar(motionView, "u");
                 return false;
             }
 
             @Override
             public boolean onDoubleTapEvent(MotionEvent e) {
-                // if the second tap hadn't been released and it's being moved
-                Log.i("TAP", "Doppio tap riconosciuto!");
-                PutIntoCalendar(motionView, "u");
                 return false;
             }
 
@@ -1527,7 +1521,7 @@ public class NoteActivity extends AppCompatActivity
         calendarSticker.setText(Html.fromHtml(changeEvent));
     }
 
-    @SuppressLint("ResourceAsColor")
+    @SuppressLint({"ClickableViewAccessibility"})
     @TargetApi(Build.VERSION_CODES.N)
     private void AddStickerCalendar() {
         calendarSticker = new TextView(getApplicationContext());
@@ -1547,12 +1541,10 @@ public class NoteActivity extends AppCompatActivity
 
         String sourceString = "<b>" + stringTitleCalendar.toUpperCase() + "</b> " + "<br/>" + date;
         calendarSticker.setText(Html.fromHtml(sourceString));
-        calendarSticker.setTextSize(25);
-        //calendarSticker.setPadding(2,2,2,2);
-        calendarSticker.setTextColor(R.color.darkGray);
-        //calendarSticker.setBackground(R.drawable.button_background);
+        calendarSticker.setTextSize(20);
+        //calendarSticker.setTextColor(R.color.darkGray);
+
         calendarSticker.setBackgroundResource(R.drawable.button_background);
-        //calendarSticker.setBackgroundColor(R.drawable.button_background);
 
         calendarSticker.setGravity(Gravity.CENTER);
         calendarSticker.bringToFront();
@@ -1560,13 +1552,27 @@ public class NoteActivity extends AppCompatActivity
         calendarSticker.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
+                switch (event.getActionMasked()) {
+                    case MotionEvent.ACTION_DOWN:
+                        dX = v.getX() - event.getRawX();
+                        dY = v.getY() - event.getRawY();
+                        lastAction = MotionEvent.ACTION_DOWN;
+                        break;
 
-                if (event.getAction() == MotionEvent.ACTION_MOVE) {
-                    //            Offsets are for centering the TextView on the touch location
-                    v.setX(event.getRawX() - v.getWidth() / 2.0f);
-                    v.setY(event.getRawY() - v.getHeight() / 2.0f);
+                    case MotionEvent.ACTION_MOVE:
+                        v.setY(event.getRawY() + dY);
+                        v.setX(event.getRawX() + dX);
+                        lastAction = MotionEvent.ACTION_MOVE;
+                        break;
+
+                    case MotionEvent.ACTION_UP:
+                        if (lastAction == MotionEvent.ACTION_DOWN)
+                        break;
+                    default:
+
                 }
                 gd.onTouchEvent(event);
+
                 return true;
             }
         });

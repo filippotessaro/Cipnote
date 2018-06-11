@@ -7,25 +7,12 @@
     android:orientation="vertical"
     android:layout_gravity="center">
 
-    <RelativeLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="TITLE"
-            android:layout_marginTop="15dp"
-            android:textColor="@color/colorPrimaryDark"
-            android:textSize="25dp"/>
-    </RelativeLayout>
-
-    <RelativeLayout
+    <LinearLayout
         android:id="@+id/layout_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
+        android:orientation="vertical"
         android:layout_gravity="center">
 
         <EditText
@@ -33,9 +20,17 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
+            android:layout_gravity="center"
             android:hint="New Title" />
 
-    </RelativeLayout>
+        <EditText
+            android:id="@+id/txt_description"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:hint="AGGIUNGI DESCRIZIONE"
+            android:layout_gravity="center"/>
+
+    </LinearLayout>
 
     <RelativeLayout
         android:id="@+id/layout_btn_data"
@@ -136,11 +131,6 @@
         android:layout_above="@+id/data_layout">
 
 
-        <EditText
-            android:id="@+id/txt_description"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:hint="AGGIUNGI DESCRIZIONE"
-            android:layout_gravity="center"/>
+
     </RelativeLayout>
 </LinearLayout>
