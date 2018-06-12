@@ -17,7 +17,7 @@
             android:id="@+id/edit_text_checkbox"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:hint="Write something..."/>
+            android:hint="@string/hint"/>
 
     </RelativeLayout>
 </LinearLayout>

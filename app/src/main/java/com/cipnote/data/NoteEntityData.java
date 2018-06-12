@@ -3,13 +3,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class NoteEntityData {
-    String id, userId, title, description;
+    private String id, userId, title, description;
 
 //    ImagesUrl images;
-    String dateCreation, dateModification;
+    private String dateCreation, dateModification;
 
-    List<TextEntityData> textEntityDataList;
-    List<ImageEntityData> imageEntityDataList;
+    private int category;
+
+    private List<TextEntityData> textEntityDataList;
+    private List<ImageEntityData> imageEntityDataList;
 
     public NoteEntityData(String id, String u, String title, String description) {
         this.id = id;
@@ -21,11 +23,20 @@ public class NoteEntityData {
 //        images = null;
         textEntityDataList = new ArrayList<TextEntityData>();
         imageEntityDataList = new ArrayList<ImageEntityData>();
+        category = 0;
     }
 
     public NoteEntityData() {
         textEntityDataList = new ArrayList<TextEntityData>();
         imageEntityDataList = new ArrayList<ImageEntityData>();
+    }
+
+    public int getCategory() {
+        return category;
+    }
+
+    public void setCategory(int category) {
+        this.category = category;
     }
 
     public void addTextElement(TextEntityData t){

@@ -64,6 +64,7 @@ import android.util.Log;
 import android.view.GestureDetector;
 import android.view.GestureDetector.OnGestureListener;
 import android.view.Gravity;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -181,7 +182,7 @@ public class NoteActivity extends AppCompatActivity
     private AIService aiService;
 
     private String userId ;
-    private SlidingUpPanelLayout d;
+    private SlidingUpPanelLayout slidingPanel;
 
     float dX;
     float dY;
@@ -286,7 +287,7 @@ public class NoteActivity extends AppCompatActivity
         initShowHideElement();
         initScrollViewElements();
 
-//        d= findViewById(R.id.sliding_layout);
+        slidingPanel = findViewById(R.id.sliding_layout);
 //        d.setPanelState(SlidingUpPanelLayout.PanelState.EXPANDED);
 //        Log.i(TAG,""+d.getPanelState());
 
@@ -353,6 +354,30 @@ public class NoteActivity extends AppCompatActivity
             }
 
         });
+
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event)  {
+        if (Integer.parseInt(android.os.Build.VERSION.SDK) > 5
+                && keyCode == KeyEvent.KEYCODE_BACK
+                && event.getRepeatCount() == 0) {
+            Log.d("CDA", "onKeyDown Called");
+            onBackPressed();
+            return true;
+        }
+        return super.onKeyDown(keyCode, event);
+    }
+
+
+    @Override
+    public void onBackPressed() {
+        Log.d("CDA", "onBackPressed Called");
+        if(slidingPanel.getPanelState() == SlidingUpPanelLayout.PanelState.EXPANDED){
+            slidingPanel.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
+        } else {
+            finish();
+        }
 
     }
 
@@ -431,7 +456,7 @@ public class NoteActivity extends AppCompatActivity
                 View alertLayout = inflater.inflate(R.layout.popuppaintview, null);
 
                 AlertDialog.Builder alert = new AlertDialog.Builder(v.getContext());
-                alert.setTitle("Spessore Tratto");
+                alert.setTitle(R.string.brush);
                 // this is set the view from XML inside AlertDialog
                 alert.setView(alertLayout);
                 // disallow cancel of AlertDialog on click of back button and outside touch
@@ -461,14 +486,14 @@ public class NoteActivity extends AppCompatActivity
                 });
 
                 //CANCEL BUTTON
-                alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                alert.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                     }
                 });
 
                 //DONE BUTTON
-                alert.setPositiveButton("Done", new DialogInterface.OnClickListener() {
+                alert.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
 
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
@@ -626,8 +651,9 @@ public class NoteActivity extends AppCompatActivity
 
                     @Override
                     public void permissionGranted() {
-                        Toast.makeText(NoteActivity.this, "Permission OK",
-                                Toast.LENGTH_SHORT).show();
+//                        Toast.makeText(NoteActivity.this, "Permission OK",
+//                                Toast.LENGTH_SHORT).show();
+                        Log.i(TAG, "check calendar permission ok");
                         PutIntoCalendar(v,"a");
                     }
 
@@ -1046,9 +1072,9 @@ public class NoteActivity extends AppCompatActivity
             String child = dbTextNotes.push().getKey();
             n.setId(child);
             dbTextNotes.child(child).setValue(n);
-            Toast.makeText(this, "Note Added", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, R.string.addnote, Toast.LENGTH_SHORT).show();
         }catch(Exception e){
-            Toast.makeText(this, "Problem with Connection", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, R.string.connectionerror, Toast.LENGTH_SHORT).show();
         }finally {
             Intent intent = new Intent(NoteActivity.this, NoteListActivity.class);
             startActivity(intent);
@@ -1116,7 +1142,7 @@ public class NoteActivity extends AppCompatActivity
     @Override
     public void onError(AIError error) {
         Log.i(TAG,error.toString());
-        Toast.makeText(this, "Errore con DialogFLow", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, R.string.connectionerror, Toast.LENGTH_SHORT).show();
     }
 
     @Override
@@ -1174,7 +1200,7 @@ public class NoteActivity extends AppCompatActivity
                 textCheckbox = edit_text_checkbox.getText().toString();
 
                 if(textCheckbox.equals("")) {
-                    Toast.makeText(NoteActivity.this,"Errore nella digitazione",
+                    Toast.makeText(NoteActivity.this,R.string.emptytext,
                             Toast.LENGTH_SHORT).show();
                 }
                 else {
@@ -1186,7 +1212,7 @@ public class NoteActivity extends AppCompatActivity
         });
 
         //CANCEL BUTTON
-        alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+        alert.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 dialog.dismiss();
@@ -1245,9 +1271,9 @@ public class NoteActivity extends AppCompatActivity
 
         final AlertDialog.Builder alert = new AlertDialog.Builder(v.getContext());
         if(s.equals("a"))
-            alert.setTitle("Aggiungi Evento al Calendario");
+            alert.setTitle(R.string.calendartitle);
         else
-            alert.setTitle("Modifica Evento al Calendario");
+            alert.setTitle(R.string.modify_calendartitle);
         // this is set the view from XML inside AlertDialog
         alert.setView(alertLayoutCalendar);
         // disallow cancel of AlertDialog on click of back button and outside touch
@@ -1319,14 +1345,14 @@ public class NoteActivity extends AppCompatActivity
         check = true;
 
         //DONE BUTTON
-        alert.setPositiveButton("Select", new DialogInterface.OnClickListener() {
+        alert.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
             }
         });
 
         //CANCEL BUTTON
-        alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+        alert.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 dialog.dismiss();
@@ -1344,7 +1370,7 @@ public class NoteActivity extends AppCompatActivity
             {
                 if(titleCalendar.getText().toString().equals("") ||
                         ((text_date.getText().toString()).equals("No selected data"))) {
-                    Toast.makeText(NoteActivity.this,"Impossibile aggiungere l'evento",
+                    Toast.makeText(NoteActivity.this,R.string.noevent,
                             Toast.LENGTH_SHORT).show();
                 }
                 else {
@@ -1353,7 +1379,7 @@ public class NoteActivity extends AppCompatActivity
                                 ((text_time_start.getText().toString()).equals("No selected time")) ||
                                 (myCalendarStart.getTimeInMillis() > myCalendarEnd.getTimeInMillis())) {
 
-                            Toast.makeText(NoteActivity.this, "Impossibile aggiungere l'evento",
+                            Toast.makeText(NoteActivity.this, R.string.noevent,
                                     Toast.LENGTH_SHORT).show();
 
                             check = false;
@@ -1398,7 +1424,7 @@ public class NoteActivity extends AppCompatActivity
                         myCalendarEnd.set(selectedyear,selectedmonth,selectedday);
                     }
                 }, mYear, mMonth, mDay);
-        mDatePicker.setTitle("Select Date");
+        mDatePicker.setTitle(R.string.selectdate);
         mDatePicker.show();
     }
 
@@ -1408,10 +1434,11 @@ public class NoteActivity extends AppCompatActivity
         dialog.newInstance();
         dialog.setIs24HourView(false);
         dialog.setRadiusDialog(20);
-        dialog.setTextTabStart("Start");
-        dialog.setTextTabEnd("End");
-        dialog.setTextBtnPositive("Confirm");
-        dialog.setTextBtnNegative("Cancel");
+        dialog.setTextTabStart(String.valueOf(R.string.starthour));
+        dialog.setTextTabEnd(String.valueOf(R.string.endhour));
+        dialog.setTextBtnNegative(String.valueOf(R.string.cancel));
+        dialog.setTextBtnPositive(String.valueOf(R.string.ok));
+
         dialog.setValidateRange(false);
         dialog.setColorBackgroundHeader(R.color.colorPrimary);
         dialog.setColorBackgroundTimePickerHeader(R.color.colorPrimary);

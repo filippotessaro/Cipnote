@@ -21,13 +21,13 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
             android:layout_gravity="center"
-            android:hint="New Title" />
+            android:hint="@string/eventtitle" />
 
         <EditText
             android:id="@+id/txt_description"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:hint="AGGIUNGI DESCRIZIONE"
+            android:hint="@string/addcalendardescription"
             android:layout_gravity="center"/>
 
     </LinearLayout>
@@ -44,7 +44,7 @@
             android:id="@+id/btn_date"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="DATA"
+            android:text="@string/date"
             android:layout_gravity="center"/>
 
     </RelativeLayout>
@@ -76,7 +76,7 @@
             android:id="@+id/btn_time"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="ORA"
+            android:text="@string/hour"
             android:layout_gravity="center"/>
 
     </RelativeLayout>
@@ -94,7 +94,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginRight="130dp"
-            android:text="No selected time"
+            android:text="@string/nostarttime"
             android:layout_centerVertical="true" />
 
         <TextView
@@ -102,7 +102,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="130dp"
-            android:text="No selected time"
+            android:text="@string/noendtime"
             android:layout_centerVertical="true"/>
     </RelativeLayout>
 
@@ -118,7 +118,7 @@
             android:id="@+id/cb_day"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Tutto il giorno"/>
+            android:text="@string/alldayevent"/>
 
     </RelativeLayout>
 

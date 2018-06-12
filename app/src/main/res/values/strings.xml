@@ -12,4 +12,39 @@
     <string name="setting">Settings</string>
     <string name="newnote">New Note</string>
     <string name="categories">Categories</string>
+    <string name="hint">Write Something...</string>
+    <string name="title">Note Title</string>
+    <string name="save">Save</string>
+    <string name="selectcolor">Select Color</string>
+    <string name="selectdate">Select Date</string>
+    <string name="starthour">Start</string>
+    <string name="endhour">Start</string>
+    <string name="noevent">Impossible to Add Event</string>
+    <string name="emptytext">Empty Text!</string>
+    <string name="connectionerror">Connection Error</string>
+    <string name="addnote">Saved Note</string>
+    <string name="brush">Brush Size</string>
+    <string name="calendartitle">Add Calendar Event</string>
+    <string name="modify_calendartitle">Modify Calendar Event</string>
+    <string name="date">DATE</string>
+    <string name="hour">HOUR</string>
+
+    <string name="addcalendardescription">Add a description to your event</string>
+    <string name="eventtitle">Event Title</string>
+    <string name="nostarttime">No Start Hour</string>
+    <string name="noendtime">No End Hour</string>
+    <string name="alldayevent">All Day</string>
+
+    <string name="photogallery">GALLERY</string>
+
+    <string name="deleteaccount">Delete Account</string>
+    <string name="share">Share Text</string>
+
+    <string name="school">School</string>
+    <string name="work">Work</string>
+    <string name="family">Family</string>
+    <string name="importantevent">Important Event</string>
+    <string name="classic">Memo</string>
+    <string name="setcategory">Set Category</string>
+
 </resources>
