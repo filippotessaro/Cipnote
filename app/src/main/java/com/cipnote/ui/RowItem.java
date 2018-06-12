@@ -1,6 +1,6 @@
 package com.cipnote.ui;
 
-class RowItem {
+public class RowItem {
 
     boolean done;
     String task;

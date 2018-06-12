@@ -22,4 +22,8 @@
     <!-- Color Dialog Time Picker-->
     <color name="CyanWater">#09b6b3</color>
 
+    <color name="bg_row_background">#fa315b</color>
+    <color name="item_name">#535353</color>
+    <color name="description">#a9a9a9</color>
+
 </resources>
