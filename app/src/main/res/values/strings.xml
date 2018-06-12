@@ -35,6 +35,7 @@
     <string name="noendtime">No End Hour</string>
     <string name="alldayevent">All Day</string>
 
+
     <string name="photogallery">GALLERY</string>
 
     <string name="deleteaccount">Delete Account</string>
@@ -46,5 +47,9 @@
     <string name="importantevent">Important Event</string>
     <string name="classic">Memo</string>
     <string name="setcategory">Set Category</string>
+    <string name="sharewith">Share Using...</string>
+
+    <string name="upload">Uploading...</string>
+
 
 </resources>

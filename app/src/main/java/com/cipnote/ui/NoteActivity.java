@@ -876,7 +876,7 @@ public class NoteActivity extends AppCompatActivity
     public void uploadImage(View v) {
 
         final ProgressDialog progressDialog = new ProgressDialog(this);
-        progressDialog.setTitle("Uploading...");
+        progressDialog.setTitle(R.string.upload);
         progressDialog.show();
 
         StorageReference ref = storageReference.child("images/"+ UUID.randomUUID().toString());
@@ -1032,7 +1032,7 @@ public class NoteActivity extends AppCompatActivity
         //Algoritmo per ripristinare le text entities
         List<MotionEntity> l = motionView.getEntities();
 
-        NoteEntityData n = new NoteEntityData("", userId , editTextTitle.getText().toString(), "descrizionfhkjfhfkjf");
+        NoteEntityData n = new NoteEntityData("", userId , editTextTitle.getText().toString(), edit_text_scroll_view.getText().toString());
         int deg= 0;
         float x = 0;
         float y = 0;
@@ -1079,8 +1079,6 @@ public class NoteActivity extends AppCompatActivity
             Intent intent = new Intent(NoteActivity.this, NoteListActivity.class);
             startActivity(intent);
         }
-
-
 
     }
 
@@ -1243,23 +1241,6 @@ public class NoteActivity extends AppCompatActivity
         customAdapter.notifyDataSetChanged();
         recyclerView.setLayoutManager(llm);
 
-       /* recyclerView.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                gestureDetector.onTouchEvent(event);
-                return true;
-            }
-
-            private GestureDetector gestureDetector = new GestureDetector(NoteActivity.this,
-                    new GestureDetector.SimpleOnGestureListener() {
-                @Override
-                public boolean onDoubleTap(MotionEvent e) {
-                    Log.d(TAG, "onDoubleTap");
-                    return super.onDoubleTap(e);
-
-                }
-            });
-        });*/
     }
 
 

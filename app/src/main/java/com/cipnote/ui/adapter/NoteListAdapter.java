@@ -2,6 +2,7 @@ package com.cipnote.ui.adapter;
 
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.DividerItemDecoration;
@@ -23,7 +24,9 @@ import android.widget.TextView;
 import com.bumptech.glide.Glide;
 import com.cipnote.R;
 import com.cipnote.data.NoteEntityData;
+import com.cipnote.data.TextEntityData;
 import com.cipnote.ui.NoteListActivity;
+import com.cipnote.widget.entity.TextEntity;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -153,6 +156,10 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.MyView
 
                                 return true;
                             case R.id.sharenote:
+                                Intent share = new Intent(Intent.ACTION_SEND);
+                                share.setType("text/plain");
+                                share.putExtra(Intent.EXTRA_TEXT, allNoteText(note));
+                                context.startActivity(Intent.createChooser(share, "Share using"));
                                 //handle menu2 click
                                 return true;
                             default:
@@ -217,6 +224,17 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.MyView
         noteList.add(position, item);
         // notify item added by position
         notifyItemInserted(position);
+    }
+
+    public String allNoteText(NoteEntityData n){
+        String s = "";
+        s += n.getTitle() + "\n";
+        s += n.getDescription() + "\n";
+        List<TextEntityData> list = n.getTextEntityDataList();
+        for(int i=0;i<list.size();i++){
+            s += list.get(i).getText() + "\n";
+        }
+        return s;
     }
 
 
