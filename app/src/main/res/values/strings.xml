@@ -9,4 +9,7 @@
     <string name="select_font">Select font</string>
     <string name="save_note">SAVE</string>
     <string name="delete">DELETE</string>
+    <string name="setting">Settings</string>
+    <string name="newnote">New Note</string>
+    <string name="categories">Categories</string>
 </resources>

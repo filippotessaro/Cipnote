@@ -1,9 +1,15 @@
 package com.cipnote.ui;
 
+import android.content.Intent;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.os.AsyncTask;
 import android.support.design.widget.CoordinatorLayout;
+import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
+import android.support.v4.view.GravityCompat;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.DefaultItemAnimator;
@@ -13,15 +19,21 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.support.v7.widget.helper.ItemTouchHelper;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
 import com.cipnote.R;
 import com.cipnote.data.NoteEntityData;
 import com.cipnote.multitouch.RecyclerItemTouchHelper;
+import com.cipnote.profile.ProfileActivity;
 import com.cipnote.ui.adapter.NoteListAdapter;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -37,28 +49,34 @@ public class NoteListActivity extends AppCompatActivity implements RecyclerItemT
 
     DatabaseReference dbTextNotes;
 
-    ListView listViewNotes;
     List<NoteEntityData> listNotes;
     FirebaseUser currentFirebaseUser;
     private RecyclerView recyclerView;
     private CoordinatorLayout coordinatorLayout;
     private NoteListAdapter mAdapter;
+    private DrawerLayout mDrawerLayout;
+    FirebaseAuth mAuth;
+    ImageView imm_view;
+    TextView txt_name, txt_email;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_note_list);
-//        dbTextNotes = FirebaseDatabase.getInstance().getReference("textnote");
+
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setTitle(getString(R.string.app_name));
+        toolbar.setTitleTextColor(Color.WHITE);
+
+        ActionBar actionbar = getSupportActionBar();
+        actionbar.setDisplayHomeAsUpEnabled(true);
+        actionbar.setHomeAsUpIndicator(R.drawable.ic_menu);
 
         recyclerView = findViewById(R.id.recycler_view);
         coordinatorLayout = findViewById(R.id.coordinator_layout);
 
-
-        //listViewNotes = (ListView)findViewById(R.id.listFirebaseNotes);
         listNotes = new ArrayList<>();
 
         ItemTouchHelper.SimpleCallback itemTouchHelperCallback = new RecyclerItemTouchHelper(0, ItemTouchHelper.LEFT, (RecyclerItemTouchHelper.RecyclerItemTouchHelperListener) this);
@@ -85,13 +103,81 @@ public class NoteListActivity extends AppCompatActivity implements RecyclerItemT
         // attaching the touch helper to recycler view
         new ItemTouchHelper(itemTouchHelperCallback1).attachToRecyclerView(recyclerView);
 
+        mDrawerLayout = findViewById(R.id.drawer_layout);
+
+        NavigationView navigationView = findViewById(R.id.nav_view);
+        navigationView.setNavigationItemSelectedListener(
+                new NavigationView.OnNavigationItemSelectedListener() {
+                    @Override
+                    public boolean onNavigationItemSelected(MenuItem menuItem) {
+                        switch (menuItem.getItemId()){
+                            case R.id.nav_settings:
+                                Intent i = new Intent(getApplicationContext(), ProfileActivity.class);
+                                startActivity(i);
+                                return true;
+                            case R.id.nav_note:
+                                Intent j = new Intent(getApplicationContext(), NoteActivity.class);
+                                startActivity(j);
+                                return true;
+                        }
+                        mDrawerLayout.closeDrawers();
+
+                        return true;
+                    }
+                });
+
+        View hView =  navigationView.getHeaderView(0);
+//        TextView nav_user = (TextView)hView.findViewById(R.id.nav_name);
+//        nav_user.setText(user);
+        imm_view = (ImageView)hView.findViewById(R.id.profileImage);
+        txt_email =(TextView) hView.findViewById(R.id.usermail) ;
+        txt_name = (TextView)hView.findViewById(R.id.username);
+
+        findViewById(R.id.floatingActionButton).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent i = new Intent(getApplicationContext(), NoteActivity.class);
+                startActivity(i);
+
+            }
+        });
+
+
+        mAuth = FirebaseAuth.getInstance();
+        setUserProfileInformation();
+
+
+    }
+
+    private void setUserProfileInformation() {
+        FirebaseUser user = mAuth.getCurrentUser();
+        Glide.with(this)
+                .load(user.getPhotoUrl())
+                .into(imm_view);
+        txt_name.setText(user.getDisplayName());
+        txt_email.setText(user.getEmail());
+
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                mDrawerLayout.openDrawer(GravityCompat.START);
+                return true;
+
+
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
     protected void onStart() {
         super.onStart();
+        new GetDataFromFirebase().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+
         dbTextNotes = FirebaseDatabase.getInstance().getReference("textnote");
-//        dbTextNotes.keepSynced(true);
         currentFirebaseUser = FirebaseAuth.getInstance().getCurrentUser() ;
         String userId = currentFirebaseUser.getUid();
         Query query = dbTextNotes.orderByChild("userId").equalTo(userId);
@@ -113,14 +199,14 @@ public class NoteListActivity extends AppCompatActivity implements RecyclerItemT
 
                 }
 
-//                FirebaseRow adapter = new FirebaseRow(NoteListActivity.this, listNotes);
-//                listViewNotes.setAdapter(adapter);
                 mAdapter = new NoteListAdapter(NoteListActivity.this,listNotes);
                 RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getApplicationContext());
                 recyclerView.setLayoutManager(mLayoutManager);
                 recyclerView.setItemAnimator(new DefaultItemAnimator());
                 recyclerView.addItemDecoration(new DividerItemDecoration(NoteListActivity.this, DividerItemDecoration.VERTICAL));
                 recyclerView.setAdapter(mAdapter);
+
+
             }
 
             @Override
@@ -128,7 +214,6 @@ public class NoteListActivity extends AppCompatActivity implements RecyclerItemT
 
             }
         });
-
 
     }
 
@@ -142,22 +227,43 @@ public class NoteListActivity extends AppCompatActivity implements RecyclerItemT
             final NoteEntityData deletedItem = listNotes.get(viewHolder.getAdapterPosition());
             final int deletedIndex = viewHolder.getAdapterPosition();
 
+            dbTextNotes.child(deletedItem.getId()).removeValue();
+
             // remove the item from recycler view
             mAdapter.removeItem(viewHolder.getAdapterPosition());
 
             // showing snack bar with Undo option
             Snackbar snackbar = Snackbar
-                    .make(coordinatorLayout, name + " removed from cart!", Snackbar.LENGTH_LONG);
+                    .make(coordinatorLayout, name + " removed from List!", Snackbar.LENGTH_LONG);
             snackbar.setAction("UNDO", new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
 
                     // undo is selected, restore the deleted item
+                    dbTextNotes.child(deletedItem.getId()).setValue(deletedItem);
                     mAdapter.restoreItem(deletedItem, deletedIndex);
                 }
             });
             snackbar.setActionTextColor(Color.YELLOW);
             snackbar.show();
+        }
+    }
+
+    private class GetDataFromFirebase extends AsyncTask<Void,Void,Boolean> {
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+        }
+
+        @Override
+        protected Boolean doInBackground(Void... voids) {
+            return false;
+        }
+
+        @Override
+        protected void onPostExecute(Boolean aBoolean) {
+            super.onPostExecute(aBoolean);
         }
     }
 }

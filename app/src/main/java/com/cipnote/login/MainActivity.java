@@ -75,7 +75,7 @@ public class MainActivity extends AppCompatActivity {
         currentUser = mAuth.getCurrentUser();
 
         if(currentUser != null) {
-            startActivity(new Intent(this, NoteActivity.class));
+            startActivity(new Intent(this, NoteListActivity.class));
             finish();
         }
     }
