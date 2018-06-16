@@ -188,6 +188,12 @@ public class NoteActivity extends AppCompatActivity
     float dY;
     int lastAction;
 
+    private NoteEntityData restoredNote = null;
+    private  String restoredIdNote = "";
+    private String localPhotoBackgroungUrl = "";
+
+    private String cloudPhotoUrl = "";
+
 
     private final MotionView.MotionViewCallback motionViewCallback =
             new MotionView.MotionViewCallback() {
@@ -214,11 +220,13 @@ public class NoteActivity extends AppCompatActivity
     };
     private ProgressBar progressRecordBar;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_note);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+
 
         FirebaseUser currentFirebaseUser = FirebaseAuth.getInstance().getCurrentUser() ;
         userId = currentFirebaseUser.getUid();
@@ -333,6 +341,9 @@ public class NoteActivity extends AppCompatActivity
             }
         });
 
+
+
+
         // set the on Double tap listener
         gd.setOnDoubleTapListener(new GestureDetector.OnDoubleTapListener() {
             @Override
@@ -354,6 +365,21 @@ public class NoteActivity extends AppCompatActivity
             }
 
         });
+
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+        Bundle p = getIntent().getExtras();
+        if(p != null){
+            restoredIdNote =p.getString("idNote");
+            Log.i(TAG,"---------------------"+ restoredIdNote + "---------------------------");
+            createNoteFromFirebase(restoredIdNote);
+
+
+        }
 
     }
 
@@ -438,8 +464,7 @@ public class NoteActivity extends AppCompatActivity
         deleteNoteButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-//                deleteAll();
-                getAllEntities();
+                deleteAll();
             }
         });
     }
@@ -828,11 +853,52 @@ public class NoteActivity extends AppCompatActivity
                     Log.i(TAG,"Photo Url: " + url);
                     if(url!= null || url!=""){
                         changePhotoBackground(url);
+                        //TODO carica nel cloud la foto, salvando sia indirizzo immagine in locale che quello in cloud
+                        //uploadPhotoOnFirebase(url);
+
                     }
 
                 }
             }
         }
+    }
+
+    private void uploadPhotoOnFirebase(String url) {
+        final ProgressDialog progressDialog = new ProgressDialog(this);
+        progressDialog.setTitle(R.string.upload);
+        progressDialog.show();
+        File file = new File(url);
+
+        //Nel caso in cui non esistesse
+        if (cloudPhotoUrl == "") {
+            cloudPhotoUrl = UUID.randomUUID().toString();
+        }
+
+        StorageReference ref = storageReference.child("images/"+ cloudPhotoUrl);
+        ref.putFile(Uri.fromFile(file))
+                .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                    @Override
+                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                        progressDialog.dismiss();
+                        Toast.makeText(NoteActivity.this, "Uploaded", Toast.LENGTH_SHORT).show();
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        progressDialog.dismiss();
+                        Toast.makeText(NoteActivity.this, "Failed "+e.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                })
+                .addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
+                    @Override
+                    public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {
+                        double progress = (100.0*taskSnapshot.getBytesTransferred()/taskSnapshot
+                                .getTotalByteCount());
+                        progressDialog.setMessage("Uploaded "+(int)progress+"%");
+                    }
+                });
+
     }
 
     private void changePhotoBackground(String url) {
@@ -841,9 +907,11 @@ public class NoteActivity extends AppCompatActivity
         if(MainLayout!=null){
             try {
                 FileInputStream fileInputStream = new FileInputStream(file);
+                localPhotoBackgroungUrl = file.getAbsolutePath();
                 Bitmap bitmap = BitmapFactory.decodeStream(fileInputStream);
                 Drawable drawable = new BitmapDrawable(getResources(), bitmap);
                 MainLayout.setBackground(drawable);
+
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             }
@@ -873,13 +941,22 @@ public class NoteActivity extends AppCompatActivity
         }
     }
 
-    public void uploadImage(View v) {
+    public String uploadDrawImage() {
 
         final ProgressDialog progressDialog = new ProgressDialog(this);
         progressDialog.setTitle(R.string.upload);
         progressDialog.show();
+        String url = "";
 
-        StorageReference ref = storageReference.child("images/"+ UUID.randomUUID().toString());
+        if(restoredNote != null){
+            if(restoredNote.getDrawUrl()!=""){
+                url = restoredNote.getDrawUrl();
+            }
+        }else{
+            url =UUID.randomUUID().toString();
+        }
+
+        StorageReference ref = storageReference.child("draw/"+ url);
         ref.putBytes(paintView.convertBitmapToByteArray())
                 .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                     @Override
@@ -903,13 +980,14 @@ public class NoteActivity extends AppCompatActivity
                         progressDialog.setMessage("Uploaded "+(int)progress+"%");
                     }
                 });
+        return url;
     }
 
-    public void loadImagePaintView(View v){
+    public void loadImagePaintView(String drawUrl){
         // Create a storage reference from our app
         // Create a reference to a file from a Google Cloud Storage URI
         StorageReference gsReference = storage.getReferenceFromUrl("" +
-                "gs://drawingapp-28b20.appspot.com/images/049438e3-b73a-43ef-9f6b-4cd0922b9e98");
+                "gs://drawingapp-28b20.appspot.com/draw/"+ drawUrl);
 
         final long ONE_MEGABYTE = 1024 * 1024;
         gsReference.getBytes(ONE_MEGABYTE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
@@ -923,6 +1001,8 @@ public class NoteActivity extends AppCompatActivity
             @Override
             public void onFailure(@NonNull Exception exception) {
                 // Handle any errors
+                Log.e(TAG, "Error on restore Draw" + exception);
+                Toast.makeText(NoteActivity.this, "Error on Restore Draw,\nPlease Check Internet Connection", Toast.LENGTH_LONG).show();
             }
         });
 
@@ -958,8 +1038,9 @@ public class NoteActivity extends AppCompatActivity
 
     }
 
+    //Rimuove tutte le entità grafiche
     private void deleteAll(){
-
+        motionView.deleteAllEntities();
     }
 
     private void getAllEntities(){
@@ -1031,8 +1112,17 @@ public class NoteActivity extends AppCompatActivity
     private void SaveNote() {
         //Algoritmo per ripristinare le text entities
         List<MotionEntity> l = motionView.getEntities();
+        NoteEntityData n;
 
-        NoteEntityData n = new NoteEntityData("", userId , editTextTitle.getText().toString(), edit_text_scroll_view.getText().toString());
+        if(restoredIdNote != ""){
+            n = new NoteEntityData(restoredIdNote, userId , editTextTitle.getText().toString(), edit_text_scroll_view.getText().toString());
+            n.setCategory(restoredNote.getCategory());
+            n.setDateCreation(restoredNote.getDateCreation());
+            n.setDateModification(String.valueOf(System.currentTimeMillis()));
+        }else{
+            n = new NoteEntityData("", userId , editTextTitle.getText().toString(), edit_text_scroll_view.getText().toString());
+        }
+
         int deg= 0;
         float x = 0;
         float y = 0;
@@ -1040,6 +1130,8 @@ public class NoteActivity extends AppCompatActivity
         String font, contentText;
         int color;
         int idImage = 0;
+        String drawUrl = uploadDrawImage();
+        n.setDrawUrl(drawUrl);
 
         for (int i = 0; i < l.size(); i++){
             if(l.get(i) instanceof TextEntity){
@@ -1063,14 +1155,20 @@ public class NoteActivity extends AppCompatActivity
                 ImageEntityData t = new ImageEntityData(x, y, idImage, deg, scale);
                 n.addImageElement(t);
             }
-
-
         }
 
-
         try{
-            String child = dbTextNotes.push().getKey();
-            n.setId(child);
+            String child;
+            //Controllo se prima avevo creato l'entità
+            if(restoredIdNote!= ""){
+                child = restoredIdNote;
+            }else{
+                child = dbTextNotes.push().getKey();
+                n.setId(child);
+            }
+            n.setLocalPhotoUrl(localPhotoBackgroungUrl);
+            uploadPhotoOnFirebase(localPhotoBackgroungUrl);
+            n.setCloudPhotoUrl(cloudPhotoUrl);
             dbTextNotes.child(child).setValue(n);
             Toast.makeText(this, R.string.addnote, Toast.LENGTH_SHORT).show();
         }catch(Exception e){
@@ -1191,7 +1289,7 @@ public class NoteActivity extends AppCompatActivity
         edit_text_checkbox = alertLayoutCalendar.findViewById(R.id.edit_text_checkbox);
 
         //DONE BUTTON
-        alert.setPositiveButton("Done", new DialogInterface.OnClickListener() {
+        alert.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
 
@@ -1586,5 +1684,58 @@ public class NoteActivity extends AppCompatActivity
         });
         MainLayout.addView(calendarSticker);
     }
+
+    public void createNoteFromFirebase(String id){
+        DatabaseReference dbRef = dbTextNotes.child(restoredIdNote);
+        dbRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                Log.i(TAG, "+++++++++++++++" + dataSnapshot.toString());
+                restoredNote = dataSnapshot.getValue(NoteEntityData.class);
+                editTextTitle.setText(restoredNote.getTitle());//Title
+                edit_text_scroll_view.setText(restoredNote.getDescription());//Description in swipe view
+
+                List<TextEntityData> list = restoredNote.getTextEntityDataList();
+
+                loadImagePaintView(restoredNote.getDrawUrl());
+
+                //Restore Text Entity
+                for(int i=0; i < list.size(); i++){
+                    List<String> fonts = fontProvider.getFontNames();
+                    String searchString = list.get(i).getFont();
+                    int index = -1;
+                    for (int j=0;j<fonts.size();j++) {
+                        if (fonts.get(j).equals(searchString)) {
+                            index = j;
+                            break;
+                        }
+                    }
+
+                    TextLayer textLayer = createTextLayer(list.get(i).getText());
+                    TextEntity textEntity = new TextEntity(textLayer, motionView.getWidth(),
+                            motionView.getHeight(), fontProvider);
+
+                    motionView.addEntity(textEntity);
+                    textEntity.getLayer().setScale(list.get(i).getScale());
+                    textEntity.getLayer().setX(list.get(i).getX());
+                    textEntity.getLayer().setY(list.get(i).getY());
+                    textEntity.getLayer().getFont().setTypeface(fonts.get(index));
+                    motionView.invalidate();
+
+                }
+                //setto gli indirizzi per le foto
+                localPhotoBackgroungUrl = restoredNote.getLocalPhotoUrl();
+                cloudPhotoUrl = restoredNote.getCloudPhotoUrl();
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                Log.w(TAG, "onCancelled", databaseError.toException());
+            }
+        });
+    }
+
+
 
 }

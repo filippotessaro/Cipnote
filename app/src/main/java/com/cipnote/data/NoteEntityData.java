@@ -10,6 +10,10 @@ public class NoteEntityData {
 
     private int category;
 
+    private String drawUrl;
+    private String cloudPhotoUrl;
+    private String localPhotoUrl;
+
     private List<TextEntityData> textEntityDataList;
     private List<ImageEntityData> imageEntityDataList;
 
@@ -18,17 +22,44 @@ public class NoteEntityData {
         this.userId = u;
         this.title = title;
         this.description = description;
-        dateCreation = String.valueOf(System.currentTimeMillis());
-        dateModification = String.valueOf(System.currentTimeMillis());
+        this.dateCreation = String.valueOf(System.currentTimeMillis());
+        this.dateModification = String.valueOf(System.currentTimeMillis());
 //        images = null;
-        textEntityDataList = new ArrayList<TextEntityData>();
-        imageEntityDataList = new ArrayList<ImageEntityData>();
-        category = 0;
+        this.textEntityDataList = new ArrayList<TextEntityData>();
+        this.imageEntityDataList = new ArrayList<ImageEntityData>();
+        this.category = 0;
+        this.drawUrl = "";
+        this.cloudPhotoUrl = "";
+        this.localPhotoUrl = "";
     }
 
     public NoteEntityData() {
         textEntityDataList = new ArrayList<TextEntityData>();
         imageEntityDataList = new ArrayList<ImageEntityData>();
+    }
+
+    public String getCloudPhotoUrl() {
+        return cloudPhotoUrl;
+    }
+
+    public void setCloudPhotoUrl(String cloudPhotoUrl) {
+        this.cloudPhotoUrl = cloudPhotoUrl;
+    }
+
+    public String getLocalPhotoUrl() {
+        return localPhotoUrl;
+    }
+
+    public void setLocalPhotoUrl(String localPhotoUrl) {
+        this.localPhotoUrl = localPhotoUrl;
+    }
+
+    public String getDrawUrl() {
+        return drawUrl;
+    }
+
+    public void setDrawUrl(String drawUrl) {
+        this.drawUrl = drawUrl;
     }
 
     public int getCategory() {

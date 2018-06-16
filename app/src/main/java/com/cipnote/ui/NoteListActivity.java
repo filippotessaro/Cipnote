@@ -24,6 +24,7 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.cipnote.R;
@@ -75,9 +76,12 @@ public class NoteListActivity extends AppCompatActivity implements RecyclerItemT
         actionbar.setHomeAsUpIndicator(R.drawable.ic_menu);
 
         recyclerView = findViewById(R.id.recycler_view);
+
         coordinatorLayout = findViewById(R.id.coordinator_layout);
 
         listNotes = new ArrayList<>();
+
+
 
         ItemTouchHelper.SimpleCallback itemTouchHelperCallback = new RecyclerItemTouchHelper(0, ItemTouchHelper.LEFT, (RecyclerItemTouchHelper.RecyclerItemTouchHelperListener) this);
         new ItemTouchHelper(itemTouchHelperCallback).attachToRecyclerView(recyclerView);
@@ -147,7 +151,11 @@ public class NoteListActivity extends AppCompatActivity implements RecyclerItemT
         setUserProfileInformation();
 
 
+
+
     }
+
+
 
     private void setUserProfileInformation() {
         FirebaseUser user = mAuth.getCurrentUser();
@@ -205,6 +213,7 @@ public class NoteListActivity extends AppCompatActivity implements RecyclerItemT
                 recyclerView.setItemAnimator(new DefaultItemAnimator());
                 recyclerView.addItemDecoration(new DividerItemDecoration(NoteListActivity.this, DividerItemDecoration.VERTICAL));
                 recyclerView.setAdapter(mAdapter);
+
 
 
             }

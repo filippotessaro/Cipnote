@@ -3,6 +3,8 @@ package com.cipnote.ui.adapter;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.os.Bundle;
+import android.os.Parcelable;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.DividerItemDecoration;
@@ -20,11 +22,14 @@ import android.widget.ImageView;
 import android.widget.RadioGroup;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.cipnote.R;
 import com.cipnote.data.NoteEntityData;
 import com.cipnote.data.TextEntityData;
+import com.cipnote.profile.ProfileActivity;
+import com.cipnote.ui.NoteActivity;
 import com.cipnote.ui.NoteListActivity;
 import com.cipnote.widget.entity.TextEntity;
 import com.google.firebase.database.DataSnapshot;
@@ -34,6 +39,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -44,15 +50,21 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.MyView
     private Context context;
     private List<NoteEntityData> noteList;
 
-    public class MyViewHolder extends RecyclerView.ViewHolder {
+
+    public class MyViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
         public TextView name, description, price;
         public ImageView thumbnail;
         public RelativeLayout viewBackground, viewForeground;
         public ImageButton moreButton;
         public ImageView category;
+        public List<NoteEntityData> notes;
+        public Context context;
 
-        public MyViewHolder(View view) {
+        public MyViewHolder(View view, Context ctx, List<NoteEntityData> noteList) {
             super(view);
+            view.setOnClickListener(this);
+            this.notes = noteList;
+            this.context = ctx;
             name = view.findViewById(R.id.name);
             description = view.findViewById(R.id.description);
             price = view.findViewById(R.id.price);
@@ -61,6 +73,27 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.MyView
             viewForeground = view.findViewById(R.id.view_foreground);
             moreButton = view.findViewById(R.id.itemoption);
             category = view.findViewById(R.id.category);
+        }
+
+        @Override
+        public void onClick(View v) {
+            int position = getAdapterPosition();
+            NoteEntityData note = this.notes.get(position);
+
+            Log.i("NoteListAdapter","Position: " + position + "Note id: "+ note.getId());
+            Toast.makeText(context,"Position: " + position, Toast.LENGTH_SHORT).show();
+            //TODO apri e ricostruisci l'intera nota
+//            Intent i = new Intent(context, NoteActivity.class);
+//            i.putExtra("NoteEntityData", note.getId());
+//            context.startActivity(i);
+
+            Bundle bundle= new Bundle();
+            bundle.putString("idNote", note.getId());
+
+            Intent i = new Intent(context,NoteActivity.class);
+            i.putExtras(bundle);
+            context.startActivity(i);
+
         }
     }
 
@@ -74,8 +107,8 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.MyView
     public MyViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View itemView = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.note_list_item, parent, false);
-
-        return new MyViewHolder(itemView);
+        MyViewHolder holder = new MyViewHolder(itemView,context,noteList);
+        return holder;
     }
 
     @Override
@@ -234,6 +267,7 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.MyView
         for(int i=0;i<list.size();i++){
             s += list.get(i).getText() + "\n";
         }
+        s += "\ncreated with ❤️ by CipNote";
         return s;
     }
 
