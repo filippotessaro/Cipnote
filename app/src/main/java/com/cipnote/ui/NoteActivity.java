@@ -34,6 +34,8 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+
+import com.bumptech.glide.Glide;
 import com.cipnote.Calendar.RangeTimePickerDialog;
 import com.cipnote.camera.CameraPermissionActivity;
 import com.cipnote.camera.PhotoActivity;
@@ -859,7 +861,7 @@ public class NoteActivity extends AppCompatActivity
                     String url = data.getStringExtra("photoUrl");
                     Log.i(TAG,"Photo Url: " + url);
                     if(url!= null || url!=""){
-                        changePhotoBackground(url);
+                        changePhotoBackground(url,"");
                     }
 
                 }
@@ -872,11 +874,6 @@ public class NoteActivity extends AppCompatActivity
         progressDialog.setTitle(R.string.upload);
         progressDialog.show();
         File file = new File(url);
-
-        //Nel caso in cui non esistesse
-        if (cloudPhotoUrl == "") {
-            cloudPhotoUrl = UUID.randomUUID().toString();
-        }
 
         StorageReference ref = storageReference.child("images/"+ cloudPhotoUrl);
         ref.putFile(Uri.fromFile(file))
@@ -905,16 +902,11 @@ public class NoteActivity extends AppCompatActivity
 
     }
 
-    private void changePhotoBackground(String url) {
-        Log.i(TAG, url);
-        File file = null;
-        try{
-            file = new File(url);
-        }catch (Exception e){
-            Log.e(TAG, e + "File NOT FOUND");
-        }
+    private void changePhotoBackground(String locUrl, String cloudUrl) {
+        Log.i(TAG, locUrl);
+        File file = new File(locUrl);
 
-        if(file != null){
+        if(file.exists()){
             if(MainLayout!=null){
                 try {
                     FileInputStream fileInputStream = new FileInputStream(file);
@@ -926,37 +918,34 @@ public class NoteActivity extends AppCompatActivity
                 } catch (FileNotFoundException e) {
                     e.printStackTrace();
                 }
-            }
-        }else if (cloudPhotoUrl != ""){
-            if(MainLayout!=null){
-                try {
-                    StorageReference gsReference = storage.getReferenceFromUrl("" +
-                            "gs://drawingapp-28b20.appspot.com/images/"+ cloudPhotoUrl);
 
-                    final long ONE_MEGABYTE = 1024 * 1024;
-                    gsReference.getBytes(ONE_MEGABYTE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
-                        @Override
-                        public void onSuccess(byte[] bytes) {
-                            Bitmap workingBitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
-                            Bitmap mBitmap = workingBitmap.copy(Bitmap.Config.ARGB_8888, true);
-                            Drawable drawable = new BitmapDrawable(getResources(), mBitmap);
-                            MainLayout.setBackground(drawable);
-                        }
-                    }).addOnFailureListener(new OnFailureListener() {
-                        @Override
-                        public void onFailure(@NonNull Exception exception) {
-                            // Handle any errors
-                            Log.e(TAG, "Error on restore Draw" + exception);
-                            Toast.makeText(NoteActivity.this, "Error on Restore Draw,\nPlease Check Internet Connection", Toast.LENGTH_LONG).show();
-                        }
-                    });
-
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }else{
-                Toast.makeText(this, "GENERAL APP ERROR", Toast.LENGTH_LONG).show();
             }
+        }else {
+            if (cloudUrl != "") {
+
+                StorageReference gsReference = storage.getReferenceFromUrl("" +
+                        "gs://drawingapp-28b20.appspot.com/images/" + cloudUrl);
+
+                final long ONE_MEGABYTE = 1024 * 1024;
+                gsReference.getBytes(ONE_MEGABYTE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
+                    @Override
+                    public void onSuccess(byte[] bytes) {
+                        Bitmap workingBitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+                        Bitmap mBitmap = workingBitmap.copy(Bitmap.Config.ARGB_8888, true);
+                        Drawable drawable = new BitmapDrawable(getResources(), mBitmap);
+                        MainLayout.setBackground(drawable);
+                    }
+                }).addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception exception) {
+                        // Handle any errors
+                        Log.e(TAG, "Error on restore Draw" + exception);
+                        Toast.makeText(NoteActivity.this, "Error on Restore Draw,\nPlease Check Internet Connection", Toast.LENGTH_LONG).show();
+                    }
+                });
+
+            }
+
         }
 
     }
@@ -1168,8 +1157,8 @@ public class NoteActivity extends AppCompatActivity
         String font, contentText;
         int color;
         int idImage = 0;
-        //String drawUrl = uploadDrawImage();
-        //n.setDrawUrl(drawUrl);
+        String drawUrl = uploadDrawImage();
+        n.setDrawUrl(drawUrl);
 //
         for (int i = 0; i < l.size(); i++){
             if(l.get(i) instanceof TextEntity){
@@ -1200,26 +1189,30 @@ public class NoteActivity extends AppCompatActivity
         }
 
 
-            String child;
-            //Controllo se prima avevo creato l'entità
-            if(restoredIdNote!= ""){
-                child = restoredIdNote;
-            }else{
-                child = dbTextNotes.push().getKey();
-                n.setId(child);
-            }
-            n.setBackgroundColorIndex(colorIndex);
+        String child;
+        //Controllo se prima avevo creato l'entità
+        if(restoredIdNote!= ""){
+            child = restoredIdNote;
+        }else{
+            child = dbTextNotes.push().getKey();
+            n.setId(child);
+        }
+        n.setBackgroundColorIndex(colorIndex);
+        if(cloudPhotoUrl == ""){
+            cloudPhotoUrl = UUID.randomUUID().toString();
+        }
 
-            n.setLocalPhotoUrl(localPhotoBackgroungUrl);
-            //uploadPhotoOnFirebase(localPhotoBackgroungUrl);
-        startService(new Intent(NoteActivity.this,UploadPhotoService.class));
+        n.setCloudPhotoUrl(cloudPhotoUrl);
+        n.setLocalPhotoUrl(localPhotoBackgroungUrl);
+        uploadPhotoOnFirebase(localPhotoBackgroungUrl);
+//        startService(new Intent(NoteActivity.this,UploadPhotoService.class));
             n.setCloudPhotoUrl(cloudPhotoUrl);
             dbTextNotes.child(child).setValue(n);
             Toast.makeText(this, R.string.addnote, Toast.LENGTH_SHORT).show();
 
-            //Intent intent = new Intent(NoteActivity.this, NoteListActivity.class);
-            //startActivity(intent);
-            finish();
+            Intent intent = new Intent(NoteActivity.this, NoteListActivity.class);
+            startActivity(intent);
+            //finish();
 
 
     }
@@ -1558,14 +1551,14 @@ public class NoteActivity extends AppCompatActivity
         dialog.newInstance();
         dialog.setIs24HourView(false);
         dialog.setRadiusDialog(20);
-        dialog.setTextTabStart(String.valueOf(R.string.starthour));
-        dialog.setTextTabEnd(String.valueOf(R.string.endhour));
-        dialog.setTextBtnNegative(String.valueOf(R.string.cancel));
-        dialog.setTextBtnPositive(String.valueOf(R.string.ok));
+        dialog.setTextTabStart("START");
+        dialog.setTextTabEnd("END");
+        dialog.setTextBtnNegative("CANCEL");
+        dialog.setTextBtnPositive("OK");
 
         dialog.setValidateRange(false);
-        dialog.setColorBackgroundHeader(R.color.colorPrimary);
-        dialog.setColorBackgroundTimePickerHeader(R.color.colorPrimary);
+        dialog.setColorBackgroundHeader(R.color.lightBlue);
+        dialog.setColorBackgroundTimePickerHeader(R.color.lightBlue);
         dialog.setColorTextButton(R.color.colorPrimaryDark);
         FragmentManager fragmentManager = getFragmentManager();
         dialog.show(fragmentManager, "");
@@ -1743,7 +1736,7 @@ public class NoteActivity extends AppCompatActivity
 
                 List<TextEntityData> list = restoredNote.getTextEntityDataList();
 
-                //loadImagePaintView(restoredNote.getDrawUrl());
+                loadImagePaintView(restoredNote.getDrawUrl());
                 if(restoredNote.getCheckboxList().size()>0){
                     customAdapter = new ListAdapter((ArrayList<RowItem>) restoredNote.getCheckboxList(), NoteActivity.this);
                     recyclerView.setAdapter(customAdapter);
@@ -1768,6 +1761,7 @@ public class NoteActivity extends AppCompatActivity
 
                     TextLayer textLayer = createTextLayer(list.get(i).getText());
                     textLayer.getFont().setTypeface(fonts.get(index));
+                    textLayer.getFont().setColor(list.get(i).getColor());
 
                     TextEntity textEntity = new TextEntity(textLayer, motionView.getWidth(),
                             motionView.getHeight(), fontProvider);
@@ -1776,8 +1770,6 @@ public class NoteActivity extends AppCompatActivity
                     textEntity.getLayer().setRotationInDegrees(list.get(i).getDeg());
                     textEntity.getLayer().setX(list.get(i).getX());
                     textEntity.getLayer().setY(list.get(i).getY());
-                    //textEntity.getLayer().getFont().setTypeface();
-                    textEntity.getLayer().getFont().setColor(list.get(i).getColor());
                     textEntity.updateEntity();
                     motionView.addEntity(textEntity);
 
@@ -1787,11 +1779,14 @@ public class NoteActivity extends AppCompatActivity
                 //setto gli indirizzi per le foto
                 localPhotoBackgroungUrl = restoredNote.getLocalPhotoUrl();
                 cloudPhotoUrl = restoredNote.getCloudPhotoUrl();
+
                 setBackgroundColor(restoredNote.getBackgroundColorIndex());
                 colorIndex = restoredNote.getBackgroundColorIndex();
+
                 if(localPhotoBackgroungUrl != "" && cloudPhotoUrl != ""){
-                    changePhotoBackground(localPhotoBackgroungUrl);
+                    changePhotoBackground(localPhotoBackgroungUrl,cloudPhotoUrl);
                 }
+
 
             }
 
@@ -1824,11 +1819,6 @@ public class NoteActivity extends AppCompatActivity
             progressDialog.setTitle(R.string.upload);
             progressDialog.show();
             File file = new File(localPhotoBackgroungUrl);
-
-            //Nel caso in cui non esistesse
-            if (cloudPhotoUrl == "") {
-                cloudPhotoUrl = UUID.randomUUID().toString();
-            }
 
             StorageReference ref = storageReference.child("images/"+ cloudPhotoUrl);
             ref.putFile(Uri.fromFile(file))

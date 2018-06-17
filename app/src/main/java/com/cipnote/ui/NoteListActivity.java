@@ -164,6 +164,7 @@ public class NoteListActivity extends AppCompatActivity implements RecyclerItemT
                 .into(imm_view);
         txt_name.setText(user.getDisplayName());
         txt_email.setText(user.getEmail());
+        //imm_view.setImageDrawable();
 
     }
 

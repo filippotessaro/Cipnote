@@ -3,6 +3,8 @@ package com.cipnote.ui.adapter;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.v7.app.AlertDialog;
@@ -39,6 +41,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -51,6 +54,7 @@ import java.util.List;
 public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.MyViewHolder> {
     private Context context;
     private List<NoteEntityData> noteList;
+    String[] allColors;
 
 
     public class MyViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
@@ -69,7 +73,7 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.MyView
             this.context = ctx;
             name = view.findViewById(R.id.name);
             description = view.findViewById(R.id.description);
-            dateModified = view.findViewById(R.id.price);
+            dateModified = view.findViewById(R.id.date);
             thumbnail = view.findViewById(R.id.thumbnail);
             viewBackground = view.findViewById(R.id.view_background);
             viewForeground = view.findViewById(R.id.view_foreground);
@@ -105,6 +109,7 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.MyView
     public MyViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View itemView = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.note_list_item, parent, false);
+        allColors = context.getResources().getStringArray(R.array.colors);
         MyViewHolder holder = new MyViewHolder(itemView,context,noteList);
         return holder;
     }
@@ -115,11 +120,18 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.MyView
         holder.name.setText(note.getTitle());
         holder.description.setText(note.getDescription());
 
+        holder.thumbnail.setImageDrawable(new ColorDrawable(Color.parseColor(allColors[note.getBackgroundColorIndex()])));
+
         //=new Date(note.getDateModification());
         //Date date = new Date((Long) note.getDateModification());
 
+        long yourmilliseconds = Long.parseLong(note.getDateModification());
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MMM/yyyy");
+        Date resultdate = new Date(yourmilliseconds);
+        //System.out.println(sdf.format(resultdate));
 
-        holder.dateModified.setText(note.getDateModification());
+
+        holder.dateModified.setText(sdf.format(resultdate));
 
 
         setCategoryImage(holder, note.getCategory());
