@@ -312,6 +312,11 @@ public class MotionView extends View {
         }
     }
 
+    public void deleteAllEntities(){
+        entities.clear();
+        invalidate();
+    }
+
     // gesture detectors
 
     private final OnTouchListener onTouchListener = new OnTouchListener() {

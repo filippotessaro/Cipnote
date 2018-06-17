@@ -303,8 +303,6 @@ public class NoteActivity extends AppCompatActivity
         initScrollViewElements();
 
         slidingPanel = findViewById(R.id.sliding_layout);
-//        d.setPanelState(SlidingUpPanelLayout.PanelState.EXPANDED);
-//        Log.i(TAG,""+d.getPanelState());
 
         //----------------CALENDAR--------------
         gd = new GestureDetector(this,new OnGestureListener() {
@@ -347,8 +345,6 @@ public class NoteActivity extends AppCompatActivity
                 return false;
             }
         });
-
-
 
 
         // set the on Double tap listener
@@ -1075,7 +1071,8 @@ public class NoteActivity extends AppCompatActivity
 
     //Rimuove tutte le entità grafiche
     private void deleteAll(){
-        //motionView.deleteAllEntities();
+        motionView.deleteAllEntities();
+        paintView.clear();
     }
 
     private void getAllEntities(){
@@ -1144,14 +1141,18 @@ public class NoteActivity extends AppCompatActivity
         //Algoritmo per ripristinare le text entities
         List<MotionEntity> l = motionView.getEntities();
         NoteEntityData n;
+        String title = editTextTitle.getText().toString();
+        if(title == ""){
+            title = "No Title Note...";
+        }
 
         if(restoredIdNote != ""){
-            n = new NoteEntityData(restoredIdNote, userId , editTextTitle.getText().toString(), edit_text_scroll_view.getText().toString());
+            n = new NoteEntityData(restoredIdNote, userId , title, edit_text_scroll_view.getText().toString());
             n.setCategory(restoredNote.getCategory());
             n.setDateCreation(restoredNote.getDateCreation());
             n.setDateModification(String.valueOf(System.currentTimeMillis()));
         }else{
-            n = new NoteEntityData("", userId , editTextTitle.getText().toString(), edit_text_scroll_view.getText().toString());
+            n = new NoteEntityData("", userId , title, edit_text_scroll_view.getText().toString());
         }
 
         int deg= 0;
