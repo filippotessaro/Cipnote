@@ -115,9 +115,9 @@ public class MotionView extends View {
 
     public void addEntity(@Nullable MotionEntity entity) {
         if (entity != null) {
-            initEntityBorder(entity);
             entities.add(entity);
-//            selectEntity(entity, false);
+            initEntityBorder(entity);
+            //selectEntity(entity, false);
         }
     }
 
@@ -303,11 +303,6 @@ public class MotionView extends View {
             selectedEntity = null;
             invalidate();
         }
-    }
-
-    public void deleteAllEntities(){
-        entities.clear();
-        invalidate();
     }
 
     // memory

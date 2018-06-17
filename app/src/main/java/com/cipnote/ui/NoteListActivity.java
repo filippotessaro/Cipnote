@@ -204,7 +204,6 @@ public class NoteListActivity extends AppCompatActivity implements RecyclerItemT
                     NoteEntityData note = new NoteEntityData();
                     note = noteSnapshot.getValue(NoteEntityData.class);
                     listNotes.add(note);
-
                 }
 
                 mAdapter = new NoteListAdapter(NoteListActivity.this,listNotes);

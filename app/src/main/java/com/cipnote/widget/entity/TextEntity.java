@@ -104,7 +104,7 @@ public class TextEntity extends MotionEntity {
         textPaint.setColor(textLayer.getFont().getColor());
         textPaint.setTypeface(fontProvider.getTypeface(textLayer.getFont().getTypeface()));
 
-        // drawing text guide : http://ivankocijan.xyz/android-drawing-multiline-text-on-canvas/
+
         // Static layout which will be drawn on canvas
         StaticLayout sl = new StaticLayout(
                 textLayer.getText(), // - text which will be drawn

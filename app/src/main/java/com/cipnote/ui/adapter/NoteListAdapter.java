@@ -40,6 +40,8 @@ import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -52,7 +54,7 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.MyView
 
 
     public class MyViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
-        public TextView name, description, price;
+        public TextView name, description, dateModified;
         public ImageView thumbnail;
         public RelativeLayout viewBackground, viewForeground;
         public ImageButton moreButton;
@@ -67,7 +69,7 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.MyView
             this.context = ctx;
             name = view.findViewById(R.id.name);
             description = view.findViewById(R.id.description);
-            price = view.findViewById(R.id.price);
+            dateModified = view.findViewById(R.id.price);
             thumbnail = view.findViewById(R.id.thumbnail);
             viewBackground = view.findViewById(R.id.view_background);
             viewForeground = view.findViewById(R.id.view_foreground);
@@ -81,11 +83,7 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.MyView
             NoteEntityData note = this.notes.get(position);
 
             Log.i("NoteListAdapter","Position: " + position + "Note id: "+ note.getId());
-            Toast.makeText(context,"Position: " + position, Toast.LENGTH_SHORT).show();
-            //TODO apri e ricostruisci l'intera nota
-//            Intent i = new Intent(context, NoteActivity.class);
-//            i.putExtra("NoteEntityData", note.getId());
-//            context.startActivity(i);
+            //Toast.makeText(context,"Position: " + position, Toast.LENGTH_SHORT).show();
 
             Bundle bundle= new Bundle();
             bundle.putString("idNote", note.getId());
@@ -116,7 +114,13 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.MyView
         final NoteEntityData note = noteList.get(position);
         holder.name.setText(note.getTitle());
         holder.description.setText(note.getDescription());
-        holder.price.setText(note.getDateCreation());
+
+        //=new Date(note.getDateModification());
+        //Date date = new Date((Long) note.getDateModification());
+
+
+        holder.dateModified.setText(note.getDateModification());
+
 
         setCategoryImage(holder, note.getCategory());
 

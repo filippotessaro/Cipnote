@@ -2,12 +2,15 @@ package com.cipnote.ui;
 
 public class RowItem {
 
-    boolean done;
-    String task;
+    private boolean done;
+    private String task;
 
     public RowItem(boolean done, String task) {
         this.done = done;
         this.task = task;
+    }
+
+    public RowItem() {
     }
 
     public boolean isDone() {

@@ -1,4 +1,6 @@
 package com.cipnote.data;
+import com.cipnote.ui.RowItem;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,9 +15,11 @@ public class NoteEntityData {
     private String drawUrl;
     private String cloudPhotoUrl;
     private String localPhotoUrl;
+    private int backgroundColorIndex;
 
     private List<TextEntityData> textEntityDataList;
     private List<ImageEntityData> imageEntityDataList;
+    private List<RowItem> checkboxList;
 
     public NoteEntityData(String id, String u, String title, String description) {
         this.id = id;
@@ -27,23 +31,43 @@ public class NoteEntityData {
 //        images = null;
         this.textEntityDataList = new ArrayList<TextEntityData>();
         this.imageEntityDataList = new ArrayList<ImageEntityData>();
+        this.checkboxList = new ArrayList<RowItem>();
         this.category = 0;
         this.drawUrl = "";
         this.cloudPhotoUrl = "";
         this.localPhotoUrl = "";
+        this.backgroundColorIndex = 0;
     }
 
     public NoteEntityData() {
-        textEntityDataList = new ArrayList<TextEntityData>();
-        imageEntityDataList = new ArrayList<ImageEntityData>();
+        this.textEntityDataList = new ArrayList<TextEntityData>();
+        this.imageEntityDataList = new ArrayList<ImageEntityData>();
+        this.checkboxList = new ArrayList<RowItem>();
     }
+
 
     public String getCloudPhotoUrl() {
         return cloudPhotoUrl;
     }
 
+    public List<RowItem> getCheckboxList() {
+        return checkboxList;
+    }
+
+    public void setCheckboxList(List<RowItem> checkboxList) {
+        this.checkboxList = checkboxList;
+    }
+
     public void setCloudPhotoUrl(String cloudPhotoUrl) {
         this.cloudPhotoUrl = cloudPhotoUrl;
+    }
+
+    public int getBackgroundColorIndex() {
+        return backgroundColorIndex;
+    }
+
+    public void setBackgroundColorIndex(int backgroundColorIndex) {
+        this.backgroundColorIndex = backgroundColorIndex;
     }
 
     public String getLocalPhotoUrl() {

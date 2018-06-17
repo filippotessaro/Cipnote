@@ -7,6 +7,7 @@ import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.app.FragmentManager;
 import android.app.ProgressDialog;
+import android.app.Service;
 import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.ContentValues;
@@ -23,6 +24,7 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.provider.CalendarContract;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -193,6 +195,9 @@ public class NoteActivity extends AppCompatActivity
     private String localPhotoBackgroungUrl = "";
 
     private String cloudPhotoUrl = "";
+
+    private RecyclerView recyclerView;
+    private LinearLayoutManager llm;
 
 
     private final MotionView.MotionViewCallback motionViewCallback =
@@ -366,20 +371,15 @@ public class NoteActivity extends AppCompatActivity
 
         });
 
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
+        recyclerView = findViewById(R.id.rv);
 
         Bundle p = getIntent().getExtras();
         if(p != null){
             restoredIdNote =p.getString("idNote");
             Log.i(TAG,"---------------------"+ restoredIdNote + "---------------------------");
             createNoteFromFirebase(restoredIdNote);
-
-
         }
+
 
     }
 
@@ -402,6 +402,7 @@ public class NoteActivity extends AppCompatActivity
         if(slidingPanel.getPanelState() == SlidingUpPanelLayout.PanelState.EXPANDED){
             slidingPanel.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
         } else {
+            //motionView.release();
             finish();
         }
 
@@ -637,11 +638,7 @@ public class NoteActivity extends AppCompatActivity
                 }
                 Log.i(TAG,"allocato colorIndex");
                 //Cambio con transizione da un colore all'altro
-                TransitionManager.beginDelayedTransition(transitionMainViewContainer,
-                       new Recolor());
-
-                MainLayout.setBackgroundDrawable(
-                        new ColorDrawable(Color.parseColor(allColors[colorIndex])));
+                setBackgroundColor(colorIndex);
             }
         });
 
@@ -785,6 +782,16 @@ public class NoteActivity extends AppCompatActivity
                 .show();
     }
 
+    private void setBackgroundColor(int color){
+
+        TransitionManager.beginDelayedTransition(transitionMainViewContainer,
+                new Recolor());
+
+        MainLayout.setBackgroundDrawable(
+                new ColorDrawable(Color.parseColor(allColors[color])));
+
+    }
+
     private void startTextEntityEditing() {
         TextEntity textEntity = currentTextEntity();
         if (textEntity != null) {
@@ -853,9 +860,6 @@ public class NoteActivity extends AppCompatActivity
                     Log.i(TAG,"Photo Url: " + url);
                     if(url!= null || url!=""){
                         changePhotoBackground(url);
-                        //TODO carica nel cloud la foto, salvando sia indirizzo immagine in locale che quello in cloud
-                        //uploadPhotoOnFirebase(url);
-
                     }
 
                 }
@@ -903,19 +907,58 @@ public class NoteActivity extends AppCompatActivity
 
     private void changePhotoBackground(String url) {
         Log.i(TAG, url);
-        File file = new File(url);
-        if(MainLayout!=null){
-            try {
-                FileInputStream fileInputStream = new FileInputStream(file);
-                localPhotoBackgroungUrl = file.getAbsolutePath();
-                Bitmap bitmap = BitmapFactory.decodeStream(fileInputStream);
-                Drawable drawable = new BitmapDrawable(getResources(), bitmap);
-                MainLayout.setBackground(drawable);
+        File file = null;
+        try{
+            file = new File(url);
+        }catch (Exception e){
+            Log.e(TAG, e + "File NOT FOUND");
+        }
 
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
+        if(file != null){
+            if(MainLayout!=null){
+                try {
+                    FileInputStream fileInputStream = new FileInputStream(file);
+                    localPhotoBackgroungUrl = file.getAbsolutePath();
+                    Bitmap bitmap = BitmapFactory.decodeStream(fileInputStream);
+                    Drawable drawable = new BitmapDrawable(getResources(), bitmap);
+                    MainLayout.setBackground(drawable);
+
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                }
+            }
+        }else if (cloudPhotoUrl != ""){
+            if(MainLayout!=null){
+                try {
+                    StorageReference gsReference = storage.getReferenceFromUrl("" +
+                            "gs://drawingapp-28b20.appspot.com/images/"+ cloudPhotoUrl);
+
+                    final long ONE_MEGABYTE = 1024 * 1024;
+                    gsReference.getBytes(ONE_MEGABYTE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
+                        @Override
+                        public void onSuccess(byte[] bytes) {
+                            Bitmap workingBitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+                            Bitmap mBitmap = workingBitmap.copy(Bitmap.Config.ARGB_8888, true);
+                            Drawable drawable = new BitmapDrawable(getResources(), mBitmap);
+                            MainLayout.setBackground(drawable);
+                        }
+                    }).addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception exception) {
+                            // Handle any errors
+                            Log.e(TAG, "Error on restore Draw" + exception);
+                            Toast.makeText(NoteActivity.this, "Error on Restore Draw,\nPlease Check Internet Connection", Toast.LENGTH_LONG).show();
+                        }
+                    });
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }else{
+                Toast.makeText(this, "GENERAL APP ERROR", Toast.LENGTH_LONG).show();
             }
         }
+
     }
 
     @Override
@@ -1033,14 +1076,13 @@ public class NoteActivity extends AppCompatActivity
             editTextTitle.setVisibility(View.GONE);
             findViewById(R.id.startCamera).setVisibility(View.GONE);
 
-
         }
 
     }
 
     //Rimuove tutte le entità grafiche
     private void deleteAll(){
-        motionView.deleteAllEntities();
+        //motionView.deleteAllEntities();
     }
 
     private void getAllEntities(){
@@ -1103,10 +1145,6 @@ public class NoteActivity extends AppCompatActivity
             }
         });
 
-
-
-//        motionView.invalidate();
-
     }
 
     private void SaveNote() {
@@ -1130,9 +1168,9 @@ public class NoteActivity extends AppCompatActivity
         String font, contentText;
         int color;
         int idImage = 0;
-        String drawUrl = uploadDrawImage();
-        n.setDrawUrl(drawUrl);
-
+        //String drawUrl = uploadDrawImage();
+        //n.setDrawUrl(drawUrl);
+//
         for (int i = 0; i < l.size(); i++){
             if(l.get(i) instanceof TextEntity){
                 Log.i(TAG,"Text Sticker");
@@ -1157,7 +1195,11 @@ public class NoteActivity extends AppCompatActivity
             }
         }
 
-        try{
+        if(customAdapter!=null){
+            n.setCheckboxList(customAdapter.getStepList());
+        }
+
+
             String child;
             //Controllo se prima avevo creato l'entità
             if(restoredIdNote!= ""){
@@ -1166,17 +1208,19 @@ public class NoteActivity extends AppCompatActivity
                 child = dbTextNotes.push().getKey();
                 n.setId(child);
             }
+            n.setBackgroundColorIndex(colorIndex);
+
             n.setLocalPhotoUrl(localPhotoBackgroungUrl);
-            uploadPhotoOnFirebase(localPhotoBackgroungUrl);
+            //uploadPhotoOnFirebase(localPhotoBackgroungUrl);
+        startService(new Intent(NoteActivity.this,UploadPhotoService.class));
             n.setCloudPhotoUrl(cloudPhotoUrl);
             dbTextNotes.child(child).setValue(n);
             Toast.makeText(this, R.string.addnote, Toast.LENGTH_SHORT).show();
-        }catch(Exception e){
-            Toast.makeText(this, R.string.connectionerror, Toast.LENGTH_SHORT).show();
-        }finally {
-            Intent intent = new Intent(NoteActivity.this, NoteListActivity.class);
-            startActivity(intent);
-        }
+
+            //Intent intent = new Intent(NoteActivity.this, NoteListActivity.class);
+            //startActivity(intent);
+            finish();
+
 
     }
 
@@ -1272,6 +1316,7 @@ public class NoteActivity extends AppCompatActivity
         }else{
             Intent intent = new Intent(NoteActivity.this, PhotoActivity.class);
             startActivityForResult(intent, PHOTO_REQUEST_CODE);
+            //finish();
         }
 
     }
@@ -1330,10 +1375,10 @@ public class NoteActivity extends AppCompatActivity
             list_checkbox.add(rowItem);
         }
 
-        final RecyclerView recyclerView = findViewById(R.id.rv);
+
         customAdapter = new ListAdapter(list_checkbox, this);
 
-        final LinearLayoutManager llm = new LinearLayoutManager(this);
+        llm = new LinearLayoutManager(this);
 
         recyclerView.setAdapter(customAdapter);
         customAdapter.notifyDataSetChanged();
@@ -1687,23 +1732,33 @@ public class NoteActivity extends AppCompatActivity
 
     public void createNoteFromFirebase(String id){
         DatabaseReference dbRef = dbTextNotes.child(restoredIdNote);
-        dbRef.addValueEventListener(new ValueEventListener() {
+        dbRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 Log.i(TAG, "+++++++++++++++" + dataSnapshot.toString());
                 restoredNote = dataSnapshot.getValue(NoteEntityData.class);
+                //createNote();
                 editTextTitle.setText(restoredNote.getTitle());//Title
                 edit_text_scroll_view.setText(restoredNote.getDescription());//Description in swipe view
 
                 List<TextEntityData> list = restoredNote.getTextEntityDataList();
 
-                loadImagePaintView(restoredNote.getDrawUrl());
+                //loadImagePaintView(restoredNote.getDrawUrl());
+                if(restoredNote.getCheckboxList().size()>0){
+                    customAdapter = new ListAdapter((ArrayList<RowItem>) restoredNote.getCheckboxList(), NoteActivity.this);
+                    recyclerView.setAdapter(customAdapter);
+                    customAdapter.notifyDataSetChanged();
+                    llm = new LinearLayoutManager(NoteActivity.this);
+                    recyclerView.setLayoutManager(llm);
+                }
 
+                List<String> fonts = fontProvider.getFontNames();
+                int index = -1;
                 //Restore Text Entity
                 for(int i=0; i < list.size(); i++){
-                    List<String> fonts = fontProvider.getFontNames();
+
                     String searchString = list.get(i).getFont();
-                    int index = -1;
+
                     for (int j=0;j<fonts.size();j++) {
                         if (fonts.get(j).equals(searchString)) {
                             index = j;
@@ -1712,20 +1767,31 @@ public class NoteActivity extends AppCompatActivity
                     }
 
                     TextLayer textLayer = createTextLayer(list.get(i).getText());
+                    textLayer.getFont().setTypeface(fonts.get(index));
+
                     TextEntity textEntity = new TextEntity(textLayer, motionView.getWidth(),
                             motionView.getHeight(), fontProvider);
 
-                    motionView.addEntity(textEntity);
                     textEntity.getLayer().setScale(list.get(i).getScale());
+                    textEntity.getLayer().setRotationInDegrees(list.get(i).getDeg());
                     textEntity.getLayer().setX(list.get(i).getX());
                     textEntity.getLayer().setY(list.get(i).getY());
-                    textEntity.getLayer().getFont().setTypeface(fonts.get(index));
+                    //textEntity.getLayer().getFont().setTypeface();
+                    textEntity.getLayer().getFont().setColor(list.get(i).getColor());
+                    textEntity.updateEntity();
+                    motionView.addEntity(textEntity);
+
                     motionView.invalidate();
 
                 }
                 //setto gli indirizzi per le foto
                 localPhotoBackgroungUrl = restoredNote.getLocalPhotoUrl();
                 cloudPhotoUrl = restoredNote.getCloudPhotoUrl();
+                setBackgroundColor(restoredNote.getBackgroundColorIndex());
+                colorIndex = restoredNote.getBackgroundColorIndex();
+                if(localPhotoBackgroungUrl != "" && cloudPhotoUrl != ""){
+                    changePhotoBackground(localPhotoBackgroungUrl);
+                }
 
             }
 
@@ -1734,6 +1800,67 @@ public class NoteActivity extends AppCompatActivity
                 Log.w(TAG, "onCancelled", databaseError.toException());
             }
         });
+
+
+
+
+    }
+
+
+
+    public class UploadPhotoService extends Service{
+
+        @Nullable
+        @Override
+        public IBinder onBind(Intent intent) {
+            return null;
+        }
+
+        @Override
+        public void onCreate() {
+            super.onCreate();
+            //uploadPhotoOnFirebase(localPhotoBackgroungUrl);
+            final ProgressDialog progressDialog = new ProgressDialog(this);
+            progressDialog.setTitle(R.string.upload);
+            progressDialog.show();
+            File file = new File(localPhotoBackgroungUrl);
+
+            //Nel caso in cui non esistesse
+            if (cloudPhotoUrl == "") {
+                cloudPhotoUrl = UUID.randomUUID().toString();
+            }
+
+            StorageReference ref = storageReference.child("images/"+ cloudPhotoUrl);
+            ref.putFile(Uri.fromFile(file))
+                    .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                        @Override
+                        public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                            progressDialog.dismiss();
+                            Toast.makeText(NoteActivity.this, "Uploaded", Toast.LENGTH_SHORT).show();
+                        }
+                    })
+                    .addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            progressDialog.dismiss();
+                            Toast.makeText(NoteActivity.this, "Failed "+e.getMessage(), Toast.LENGTH_SHORT).show();
+                        }
+                    })
+                    .addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
+                        @Override
+                        public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {
+                            double progress = (100.0*taskSnapshot.getBytesTransferred()/taskSnapshot
+                                    .getTotalByteCount());
+                            progressDialog.setMessage("Uploaded "+(int)progress+"%");
+                        }
+                    });
+
+        }
+
+        @Override
+        public void onDestroy() {
+            super.onDestroy();
+        }
     }
 
 

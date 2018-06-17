@@ -10,6 +10,7 @@ public class CalendarEntity {
     private int calendarID;
     private String timeZone;
 
+    private float x=0, y=0;
     // constructor without end time
     public CalendarEntity(long startTime, String titleCalendar, String description,
                           int calendarID, String timeZone) {
@@ -48,6 +49,22 @@ public class CalendarEntity {
         this.endTimeAllday = endTimeAllday;
         this.calendarID = calendarID;
         this.timeZone = timeZone;
+    }
+
+    public float getX() {
+        return x;
+    }
+
+    public void setX(float x) {
+        this.x = x;
+    }
+
+    public float getY() {
+        return y;
+    }
+
+    public void setY(float y) {
+        this.y = y;
     }
 
     public int getAllDay() {
