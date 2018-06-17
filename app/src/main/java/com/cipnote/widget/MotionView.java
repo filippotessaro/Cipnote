@@ -339,7 +339,11 @@ public class MotionView extends View {
 
         @Override
         public void onLongPress(MotionEvent e) {
-            updateOnLongPress(e);
+            //updateOnLongPress(e);
+            if (selectedEntity != null) {
+                deletedSelectedEntity();
+                updateSelectionOnTap(e);
+            }
         }
 
         @Override

@@ -862,6 +862,9 @@ public class NoteActivity extends AppCompatActivity
                     Log.i(TAG,"Photo Url: " + url);
                     if(url!= null || url!=""){
                         changePhotoBackground(url,"");
+                        if(cloudPhotoUrl == ""){
+                            cloudPhotoUrl = UUID.randomUUID().toString();
+                        }
                     }
 
                 }
@@ -906,6 +909,7 @@ public class NoteActivity extends AppCompatActivity
         Log.i(TAG, locUrl);
         File file = new File(locUrl);
 
+
         if(file.exists()){
             if(MainLayout!=null){
                 try {
@@ -940,7 +944,7 @@ public class NoteActivity extends AppCompatActivity
                     public void onFailure(@NonNull Exception exception) {
                         // Handle any errors
                         Log.e(TAG, "Error on restore Draw" + exception);
-                        Toast.makeText(NoteActivity.this, "Error on Restore Draw,\nPlease Check Internet Connection", Toast.LENGTH_LONG).show();
+                        Toast.makeText(NoteActivity.this, "Error on Restore Photo,\nPlease Check Internet Connection", Toast.LENGTH_LONG).show();
                     }
                 });
 
@@ -1198,9 +1202,7 @@ public class NoteActivity extends AppCompatActivity
             n.setId(child);
         }
         n.setBackgroundColorIndex(colorIndex);
-        if(cloudPhotoUrl == ""){
-            cloudPhotoUrl = UUID.randomUUID().toString();
-        }
+
 
         n.setCloudPhotoUrl(cloudPhotoUrl);
         n.setLocalPhotoUrl(localPhotoBackgroungUrl);

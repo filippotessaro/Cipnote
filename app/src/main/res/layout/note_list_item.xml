@@ -34,14 +34,14 @@
 
     <RelativeLayout
         android:id="@+id/view_foreground"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@android:color/white"
         android:padding="@dimen/padd_10">
 
         <ImageView
             android:id="@+id/thumbnail"
-            android:layout_width="27dp"
+            android:layout_width="18dp"
             android:layout_height="@dimen/thumbnail"
             android:layout_alignParentLeft="true"
             android:layout_alignParentStart="true"
@@ -52,30 +52,34 @@
             android:id="@+id/category"
             android:layout_width="24dp"
             android:layout_height="24dp"
-            android:layout_toEndOf="@+id/name"
-            android:scaleType="centerCrop"
-            android:layout_toRightOf="@+id/name" />
+            android:layout_alignTop="@+id/thumbnail"
+            android:layout_marginLeft="5dp"
+            android:layout_toEndOf="@+id/thumbnail"
+            android:scaleType="centerCrop" />
 
         <TextView
             android:id="@+id/name"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="2dp"
-            android:layout_toRightOf="@id/thumbnail"
+            android:layout_alignTop="@+id/thumbnail"
+            android:layout_marginLeft="3dp"
+            android:maxLength="15"
+            android:layout_toEndOf="@+id/category"
             android:ellipsize="end"
             android:fontFamily="sans-serif-medium"
             android:maxLines="1"
             android:textColor="@color/item_name"
-            android:textSize="17dp"
-            android:layout_width="wrap_content" />
+            android:textSize="17dp" />
 
         <TextView
             android:id="@+id/description"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_below="@id/name"
-            android:layout_marginLeft="2dp"
+            android:layout_marginLeft="5dp"
             android:layout_marginTop="2dp"
             android:layout_toRightOf="@id/thumbnail"
+            android:maxLength="25"
             android:textColor="@color/description"
             android:textSize="12dp" />
 
@@ -84,6 +88,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
+            android:layout_marginLeft="5dp"
             android:layout_toRightOf="@id/thumbnail"
             android:textColor="@color/colorAccent"
             android:textStyle="bold" />
