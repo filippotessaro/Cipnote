@@ -51,5 +51,8 @@
 
     <string name="upload">Uploading...</string>
 
+    <string name="letstart">Now You can take a picture and add it into your Awesome Note</string>
+
+    <string name="photomessage">Take Photo</string>
 
 </resources>

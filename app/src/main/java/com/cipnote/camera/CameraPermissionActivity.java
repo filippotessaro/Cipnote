@@ -59,15 +59,15 @@ public class CameraPermissionActivity extends AppCompatActivity {
         mAuth = FirebaseAuth.getInstance();
         FirebaseUser user = mAuth.getCurrentUser();
 
-        String s = "Ciao " + user.getDisplayName() +"!";
+        String s = getString(R.string.letstart);
 
         // setup the alert builder
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Benvenuto");
+        builder.setTitle(R.string.photomessage);
         builder.setMessage(s);
 
         // add a button
-        builder.setPositiveButton("Inizia!", new DialogInterface.OnClickListener() {
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
                 StartCamera();
             }

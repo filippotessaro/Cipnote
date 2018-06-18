@@ -21,6 +21,16 @@ public class NoteEntityData {
     private List<ImageEntityData> imageEntityDataList;
     private List<RowItem> checkboxList;
 
+    public CalendarEntity getCalendarEntity() {
+        return calendarEntity;
+    }
+
+    public void setCalendarEntity(CalendarEntity calendarEntity) {
+        this.calendarEntity = calendarEntity;
+    }
+
+    private CalendarEntity calendarEntity;
+
     public NoteEntityData(String id, String u, String title, String description) {
         this.id = id;
         this.userId = u;
@@ -37,12 +47,14 @@ public class NoteEntityData {
         this.cloudPhotoUrl = "";
         this.localPhotoUrl = "";
         this.backgroundColorIndex = 0;
+        this.calendarEntity = null;
     }
 
     public NoteEntityData() {
         this.textEntityDataList = new ArrayList<TextEntityData>();
         this.imageEntityDataList = new ArrayList<ImageEntityData>();
         this.checkboxList = new ArrayList<RowItem>();
+        this.calendarEntity = null;
     }
 
 

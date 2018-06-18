@@ -28,6 +28,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.GestureDetector;
+import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.OrientationEventListener;
 import android.view.Surface;
@@ -42,6 +43,7 @@ import android.widget.Toast;
 import com.cipnote.R;
 import com.cipnote.profile.ProfileActivity;
 import com.cipnote.ui.NoteActivity;
+import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -238,6 +240,20 @@ public class PhotoActivity extends AppCompatActivity
         }
     }
 
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event)  {
+        if (Integer.parseInt(android.os.Build.VERSION.SDK) > 5
+                && keyCode == KeyEvent.KEYCODE_BACK
+                && event.getRepeatCount() == 0) {
+            Log.d("CDA", "onKeyDown Called");
+            onBackPressed();
+            return true;
+        }
+        return super.onKeyDown(keyCode, event);
+    }
+
+
+
     public String saveToSDCard(byte[] data, int rotation) throws IOException {
         String imagePath = "";
         try {
@@ -386,7 +402,8 @@ public class PhotoActivity extends AppCompatActivity
     @Override
     public void onBackPressed() {
         super.onBackPressed();
-        cancelSavePicTaskIfNeed();
+//        cancelSavePicTaskIfNeed();
+        finish();
     }
 
     @Override

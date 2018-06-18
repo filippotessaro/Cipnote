@@ -7,9 +7,6 @@ import android.view.View;
 
 import com.cipnote.ui.adapter.NoteListAdapter;
 
-/**
- * Created by ravi on 29/09/17.
- */
 
 public class RecyclerItemTouchHelper extends ItemTouchHelper.SimpleCallback {
     private RecyclerItemTouchHelperListener listener;

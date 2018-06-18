@@ -3,6 +3,7 @@ package com.cipnote.ui;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
+import android.app.Activity;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.app.FragmentManager;
@@ -14,6 +15,7 @@ import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
@@ -40,6 +42,7 @@ import com.cipnote.Calendar.RangeTimePickerDialog;
 import com.cipnote.camera.CameraPermissionActivity;
 import com.cipnote.camera.PhotoActivity;
 import com.cipnote.camera.RunTimePermission;
+import com.cipnote.data.CalendarEntity;
 import com.cipnote.data.ImageEntityData;
 import com.cipnote.data.NoteEntityData;
 import com.cipnote.data.TextEntityData;
@@ -187,6 +190,7 @@ public class NoteActivity extends AppCompatActivity
 
     private String userId ;
     private SlidingUpPanelLayout slidingPanel;
+    private FirebaseUser currentFirebaseUser;
 
     float dX;
     float dY;
@@ -200,6 +204,7 @@ public class NoteActivity extends AppCompatActivity
 
     private RecyclerView recyclerView;
     private LinearLayoutManager llm;
+    private CalendarEntity calendarEntity;
 
 
     private final MotionView.MotionViewCallback motionViewCallback =
@@ -235,7 +240,7 @@ public class NoteActivity extends AppCompatActivity
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
 
-        FirebaseUser currentFirebaseUser = FirebaseAuth.getInstance().getCurrentUser() ;
+        currentFirebaseUser = FirebaseAuth.getInstance().getCurrentUser() ;
         userId = currentFirebaseUser.getUid();
         Log.i(TAG,"UserId: " + userId);
 
@@ -400,8 +405,13 @@ public class NoteActivity extends AppCompatActivity
         if(slidingPanel.getPanelState() == SlidingUpPanelLayout.PanelState.EXPANDED){
             slidingPanel.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
         } else {
-            //motionView.release();
-            finish();
+            if(editTextTitle.getText().toString()!="" || motionView.getEntities().size()>0){
+                SaveNote();
+            }else{
+                finish();
+            }
+
+            //
         }
 
     }
@@ -1207,6 +1217,7 @@ public class NoteActivity extends AppCompatActivity
 
         n.setCloudPhotoUrl(cloudPhotoUrl);
         n.setLocalPhotoUrl(localPhotoBackgroungUrl);
+        n.setCalendarEntity(calendarEntity);
         uploadPhotoOnFirebase(localPhotoBackgroungUrl);
 //        startService(new Intent(NoteActivity.this,UploadPhotoService.class));
             n.setCloudPhotoUrl(cloudPhotoUrl);
@@ -1593,6 +1604,26 @@ public class NoteActivity extends AppCompatActivity
         values.put(CalendarContract.Events.DESCRIPTION, stringDescription);
         //  values.put(CalendarContract.Events.EVENT_LOCATION, "Somewhere");
 
+        String calenderEmaillAddress = currentFirebaseUser.getEmail();
+        int calenderId = 3;
+        String[] projection = new String[]{
+                CalendarContract.Calendars._ID,
+                CalendarContract.Calendars.ACCOUNT_NAME};
+        Cursor cursor = cr.query(Uri.parse("content://com.android.calendar/calendars"), projection,
+                CalendarContract.Calendars.ACCOUNT_NAME + "=? and (" +
+                        CalendarContract.Calendars.NAME + "=? or " +
+                        CalendarContract.Calendars.CALENDAR_DISPLAY_NAME + "=?)",
+                new String[]{calenderEmaillAddress, calenderEmaillAddress,
+                        calenderEmaillAddress}, null);
+        if (cursor.moveToFirst()) {
+            if (cursor.getString(1).equals(calenderEmaillAddress))
+                calenderId=cursor.getInt(0); //youre calender id to be insered in above your code
+        }
+        values.put(CalendarContract.Events.CALENDAR_ID, calenderId);
+
+        values.put(CalendarContract.Events.EVENT_TIMEZONE,
+                Calendar.getInstance().getTimeZone().getID());
+
         if (checkBoxDay.isChecked()) {
             myCalendarStart.set(Calendar.HOUR, 0);
             myCalendarStart.set(Calendar.MINUTE, 0);
@@ -1601,15 +1632,18 @@ public class NoteActivity extends AppCompatActivity
             values.put(CalendarContract.Events.DURATION,  "PT1D");
             values.put(CalendarContract.Events.ALL_DAY, 1);
             checkbox = true;
+
+            calendarEntity = new CalendarEntity(1, myCalendarStart.getTimeInMillis(), stringTitleCalendar, stringDescription, "PT1D",
+                    calenderId, Calendar.getInstance().getTimeZone().getID());
         }
         else {
             values.put(CalendarContract.Events.DTSTART, myCalendarStart.getTimeInMillis());
             values.put(CalendarContract.Events.DTEND, myCalendarEnd.getTimeInMillis());
-        }
 
-        values.put(CalendarContract.Events.CALENDAR_ID, 3);
-        values.put(CalendarContract.Events.EVENT_TIMEZONE,
-                Calendar.getInstance().getTimeZone().getID());
+            calendarEntity = new CalendarEntity(myCalendarStart.getTimeInMillis(), myCalendarEnd.getTimeInMillis(), stringTitleCalendar,
+                    stringDescription, calenderId, Calendar.getInstance().getTimeZone().getID());
+
+        }
         if (ActivityCompat.checkSelfPermission(NoteActivity.this,
                 Manifest.permission.WRITE_CALENDAR) != PackageManager.PERMISSION_GRANTED) {
             // TODO: Consider calling
@@ -1671,6 +1705,7 @@ public class NoteActivity extends AppCompatActivity
     @SuppressLint({"ClickableViewAccessibility"})
     @TargetApi(Build.VERSION_CODES.N)
     private void AddStickerCalendar() {
+
         calendarSticker = new TextView(getApplicationContext());
 
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
@@ -1786,9 +1821,39 @@ public class NoteActivity extends AppCompatActivity
                 setBackgroundColor(restoredNote.getBackgroundColorIndex());
                 colorIndex = restoredNote.getBackgroundColorIndex();
 
+                if(restoredNote.getCalendarEntity()!=null){
+
+                    if(restoredNote.getCalendarEntity().getAllDay() == 1){
+                        calendarEntity = new CalendarEntity(1,
+                                restoredNote.getCalendarEntity().getStartTime(),
+                                restoredNote.getCalendarEntity().getTitleCalendar(),
+                                restoredNote.getCalendarEntity().getDescription(),
+                                restoredNote.getCalendarEntity().getEndTimeAllday(),
+                                restoredNote.getCalendarEntity().getCalendarID(),
+                                restoredNote.getCalendarEntity().getTimeZone());
+                    }
+                    else {
+                        calendarEntity = new CalendarEntity(
+                                restoredNote.getCalendarEntity().getStartTime(),
+                                restoredNote.getCalendarEntity().getEndTime(),
+                                restoredNote.getCalendarEntity().getTitleCalendar(),
+                                restoredNote.getCalendarEntity().getDescription(),
+                                restoredNote.getCalendarEntity().getCalendarID(),
+                                restoredNote.getCalendarEntity().getTimeZone());
+                    }
+
+                    myCalendarStart.setTimeInMillis(calendarEntity.getStartTime());
+                    myCalendarEnd.setTimeInMillis(calendarEntity.getEndTime());
+                    stringTitleCalendar = calendarEntity.getTitleCalendar();
+                    stringDescription = calendarEntity.getDescription();
+
+                    AddStickerCalendar();
+                }
+
                 if(localPhotoBackgroungUrl != "" && cloudPhotoUrl != ""){
                     changePhotoBackground(localPhotoBackgroungUrl,cloudPhotoUrl);
                 }
+
 
 
             }

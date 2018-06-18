@@ -11,31 +11,21 @@ public class CalendarEntity {
     private String timeZone;
 
     private float x=0, y=0;
-    // constructor without end time
-    public CalendarEntity(long startTime, String titleCalendar, String description,
-                          int calendarID, String timeZone) {
-        this.allDay = allDay;
-        this.startTime = startTime;
-        this.endTime = endTime;
-        this.titleCalendar = titleCalendar;
-        this.description = description;
-        this.endTimeAllday = endTimeAllday;
-        this.calendarID = calendarID;
-        this.timeZone = timeZone;
-    }
-
 
     // constructor not all day event
     public CalendarEntity(long startTime, long endTime, String titleCalendar, String description,
                           int calendarID, String timeZone) {
-        this.allDay = allDay;
+        this.allDay = 0;
         this.startTime = startTime;
         this.endTime = endTime;
         this.titleCalendar = titleCalendar;
         this.description = description;
-        this.endTimeAllday = endTimeAllday;
+        this.endTimeAllday = "";
         this.calendarID = calendarID;
         this.timeZone = timeZone;
+    }
+
+    public CalendarEntity() {
     }
 
     //constructor all day event
@@ -43,7 +33,7 @@ public class CalendarEntity {
                           String endTimeAllday, int calendarID, String timeZone) {
         this.allDay = allDay;
         this.startTime = startTime;
-        this.endTime = endTime;
+        this.endTime = 0;
         this.titleCalendar = titleCalendar;
         this.description = description;
         this.endTimeAllday = endTimeAllday;

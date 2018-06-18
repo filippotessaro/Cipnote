@@ -131,8 +131,6 @@ public class NoteListActivity extends AppCompatActivity implements RecyclerItemT
                 });
 
         View hView =  navigationView.getHeaderView(0);
-//        TextView nav_user = (TextView)hView.findViewById(R.id.nav_name);
-//        nav_user.setText(user);
         imm_view = (ImageView)hView.findViewById(R.id.profileImage);
         txt_email =(TextView) hView.findViewById(R.id.usermail) ;
         txt_name = (TextView)hView.findViewById(R.id.username);
@@ -150,9 +148,6 @@ public class NoteListActivity extends AppCompatActivity implements RecyclerItemT
         mAuth = FirebaseAuth.getInstance();
         setUserProfileInformation();
 
-
-
-
     }
 
 
@@ -164,7 +159,6 @@ public class NoteListActivity extends AppCompatActivity implements RecyclerItemT
                 .into(imm_view);
         txt_name.setText(user.getDisplayName());
         txt_email.setText(user.getEmail());
-        //imm_view.setImageDrawable();
 
     }
 
@@ -213,8 +207,6 @@ public class NoteListActivity extends AppCompatActivity implements RecyclerItemT
                 recyclerView.setItemAnimator(new DefaultItemAnimator());
                 recyclerView.addItemDecoration(new DividerItemDecoration(NoteListActivity.this, DividerItemDecoration.VERTICAL));
                 recyclerView.setAdapter(mAdapter);
-
-
 
             }
 

@@ -132,6 +132,7 @@ public class MainActivity extends AppCompatActivity {
                 });
     }
 
+
     private void UpdateUI(FirebaseUser user) {
 
         currentUser = user;
