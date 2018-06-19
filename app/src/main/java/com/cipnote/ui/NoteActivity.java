@@ -405,13 +405,26 @@ public class NoteActivity extends AppCompatActivity
         if(slidingPanel.getPanelState() == SlidingUpPanelLayout.PanelState.EXPANDED){
             slidingPanel.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
         } else {
-            if(editTextTitle.getText().toString()!="" || motionView.getEntities().size()>0){
-                SaveNote();
-            }else{
-                finish();
-            }
+            // setup the alert builder
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setTitle(R.string.photomessage);
+            builder.setMessage("Do you want to save the note before exit?");
 
-            //
+            // add a button
+            builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int id) {
+                    SaveNote();
+                }
+            });
+            builder.setNegativeButton("NO", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int id) {
+                    finish();
+                }
+            });
+
+            // create and show the alert dialog
+            AlertDialog dialog = builder.create();
+            dialog.show();
         }
 
     }
@@ -644,6 +657,8 @@ public class NoteActivity extends AppCompatActivity
                 else {
                     colorIndex++;
                 }
+                cloudPhotoUrl = "";
+                localPhotoBackgroungUrl = "";
                 Log.i(TAG,"allocato colorIndex");
                 //Cambio con transizione da un colore all'altro
                 setBackgroundColor(colorIndex);
@@ -866,10 +881,12 @@ public class NoteActivity extends AppCompatActivity
                 if(data!=null){
                     String url = data.getStringExtra("photoUrl");
                     Log.i(TAG,"Photo Url: " + url);
-                    if(url!= null || url!=""){
+                    if(url != null || url != ""){
                         changePhotoBackground(url,"");
                         if(cloudPhotoUrl == ""){
                             cloudPhotoUrl = UUID.randomUUID().toString();
+                        }else {
+                            cloudPhotoUrl = restoredNote.getCloudPhotoUrl();
                         }
                     }
 
@@ -879,9 +896,6 @@ public class NoteActivity extends AppCompatActivity
     }
 
     private void uploadPhotoOnFirebase(String url) {
-        final ProgressDialog progressDialog = new ProgressDialog(this);
-        progressDialog.setTitle(R.string.upload);
-        progressDialog.show();
         File file = new File(url);
 
         StorageReference ref = storageReference.child("images/"+ cloudPhotoUrl);
@@ -889,23 +903,14 @@ public class NoteActivity extends AppCompatActivity
                 .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                     @Override
                     public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                        progressDialog.dismiss();
-                        Toast.makeText(NoteActivity.this, "Uploaded", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(NoteActivity.this, "Photo Uploaded", Toast.LENGTH_SHORT).show();
                     }
                 })
                 .addOnFailureListener(new OnFailureListener() {
                     @Override
                     public void onFailure(@NonNull Exception e) {
-                        progressDialog.dismiss();
+
                         Toast.makeText(NoteActivity.this, "Failed "+e.getMessage(), Toast.LENGTH_SHORT).show();
-                    }
-                })
-                .addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
-                    @Override
-                    public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {
-                        double progress = (100.0*taskSnapshot.getBytesTransferred()/taskSnapshot
-                                .getTotalByteCount());
-                        progressDialog.setMessage("Uploaded "+(int)progress+"%");
                     }
                 });
 
@@ -932,7 +937,6 @@ public class NoteActivity extends AppCompatActivity
             }
         }else {
             if (cloudUrl != "") {
-
                 StorageReference gsReference = storage.getReferenceFromUrl("" +
                         "gs://drawingapp-28b20.appspot.com/images/" + cloudUrl);
 
@@ -1215,18 +1219,23 @@ public class NoteActivity extends AppCompatActivity
         n.setBackgroundColorIndex(colorIndex);
 
 
-        n.setCloudPhotoUrl(cloudPhotoUrl);
+
         n.setLocalPhotoUrl(localPhotoBackgroungUrl);
         n.setCalendarEntity(calendarEntity);
-        uploadPhotoOnFirebase(localPhotoBackgroungUrl);
-//        startService(new Intent(NoteActivity.this,UploadPhotoService.class));
-            n.setCloudPhotoUrl(cloudPhotoUrl);
-            dbTextNotes.child(child).setValue(n);
-            Toast.makeText(this, R.string.addnote, Toast.LENGTH_SHORT).show();
 
-            Intent intent = new Intent(NoteActivity.this, NoteListActivity.class);
-            startActivity(intent);
+        if(cloudPhotoUrl!=""){
+            n.setCloudPhotoUrl(cloudPhotoUrl);
+            uploadPhotoOnFirebase(localPhotoBackgroungUrl);
+
+        }
+
+        dbTextNotes.child(child).setValue(n);
+        Toast.makeText(this, R.string.addnote, Toast.LENGTH_SHORT).show();
+
+        Intent intent = new Intent(NoteActivity.this, NoteListActivity.class);
+        startActivity(intent);
             //finish();
+        //startService(new Intent(this, UploadPhotoService.class));
 
 
     }
@@ -1724,7 +1733,9 @@ public class NoteActivity extends AppCompatActivity
         String sourceString = "<b>" + stringTitleCalendar.toUpperCase() + "</b> " + "<br/>" + date;
         calendarSticker.setText(Html.fromHtml(sourceString));
         calendarSticker.setTextSize(20);
-        //calendarSticker.setTextColor(R.color.darkGray);
+        calendarSticker.setPadding(10,10,10,10);
+        calendarSticker.setTextColor(getResources().getColor(R.color.colorPrimary));
+
 
         calendarSticker.setBackgroundResource(R.drawable.button_background);
 
@@ -1871,7 +1882,7 @@ public class NoteActivity extends AppCompatActivity
 
 
 
-    public class UploadPhotoService extends Service{
+    /*public class UploadPhotoService extends Service{
 
         @Nullable
         @Override
@@ -1882,44 +1893,14 @@ public class NoteActivity extends AppCompatActivity
         @Override
         public void onCreate() {
             super.onCreate();
-            //uploadPhotoOnFirebase(localPhotoBackgroungUrl);
-            final ProgressDialog progressDialog = new ProgressDialog(this);
-            progressDialog.setTitle(R.string.upload);
-            progressDialog.show();
-            File file = new File(localPhotoBackgroungUrl);
-
-            StorageReference ref = storageReference.child("images/"+ cloudPhotoUrl);
-            ref.putFile(Uri.fromFile(file))
-                    .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                        @Override
-                        public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                            progressDialog.dismiss();
-                            Toast.makeText(NoteActivity.this, "Uploaded", Toast.LENGTH_SHORT).show();
-                        }
-                    })
-                    .addOnFailureListener(new OnFailureListener() {
-                        @Override
-                        public void onFailure(@NonNull Exception e) {
-                            progressDialog.dismiss();
-                            Toast.makeText(NoteActivity.this, "Failed "+e.getMessage(), Toast.LENGTH_SHORT).show();
-                        }
-                    })
-                    .addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
-                        @Override
-                        public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {
-                            double progress = (100.0*taskSnapshot.getBytesTransferred()/taskSnapshot
-                                    .getTotalByteCount());
-                            progressDialog.setMessage("Uploaded "+(int)progress+"%");
-                        }
-                    });
-
+            uploadPhotoOnFirebase(localPhotoBackgroungUrl);
         }
 
         @Override
         public void onDestroy() {
             super.onDestroy();
         }
-    }
+    }*/
 
 
 

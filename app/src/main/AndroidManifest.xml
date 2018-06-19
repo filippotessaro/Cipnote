@@ -64,6 +64,8 @@
             android:name=".ui.NoteActivity"
             android:screenOrientation="portrait" />
         <activity android:name=".ui.NoteListActivity"></activity>
+
+
     </application>
 
 </manifest>
