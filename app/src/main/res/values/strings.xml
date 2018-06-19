@@ -54,5 +54,8 @@
     <string name="letstart">Now You can take a picture and add it into your Awesome Note</string>
 
     <string name="photomessage">Take Photo</string>
+    <string name="doyouwant">Do you want to save the note before exit?</string>
+    <string name="action_search">Search</string>
+
 
 </resources>

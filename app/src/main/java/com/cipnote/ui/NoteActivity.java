@@ -311,6 +311,7 @@ public class NoteActivity extends AppCompatActivity
 
         //----------------CALENDAR--------------
         gd = new GestureDetector(this,new OnGestureListener() {
+
             @Override
             public boolean onSingleTapUp(MotionEvent e) {
                 Log.i("Single","Single Tap");
@@ -334,7 +335,7 @@ public class NoteActivity extends AppCompatActivity
             @Override
             public void onLongPress(MotionEvent e) {
                 // TODO Auto-generated method stub
-
+                calendarSticker.setVisibility(View.GONE);
             }
 
             @Override
@@ -407,8 +408,8 @@ public class NoteActivity extends AppCompatActivity
         } else {
             // setup the alert builder
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setTitle(R.string.photomessage);
-            builder.setMessage("Do you want to save the note before exit?");
+            builder.setTitle(R.string.save_note);
+            builder.setMessage(R.string.doyouwant);
 
             // add a button
             builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
@@ -696,8 +697,6 @@ public class NoteActivity extends AppCompatActivity
 
                     @Override
                     public void permissionGranted() {
-//                        Toast.makeText(NoteActivity.this, "Permission OK",
-//                                Toast.LENGTH_SHORT).show();
                         Log.i(TAG, "check calendar permission ok");
                         PutIntoCalendar(v,"a");
                     }
@@ -881,7 +880,7 @@ public class NoteActivity extends AppCompatActivity
                 if(data!=null){
                     String url = data.getStringExtra("photoUrl");
                     Log.i(TAG,"Photo Url: " + url);
-                    if(url != null || url != ""){
+                    if(url != null || !url.equals("")){
                         changePhotoBackground(url,"");
                         if(cloudPhotoUrl == ""){
                             cloudPhotoUrl = UUID.randomUUID().toString();
@@ -936,7 +935,7 @@ public class NoteActivity extends AppCompatActivity
 
             }
         }else {
-            if (cloudUrl != "") {
+            if (!cloudUrl.equals("")) {
                 StorageReference gsReference = storage.getReferenceFromUrl("" +
                         "gs://drawingapp-28b20.appspot.com/images/" + cloudUrl);
 
@@ -1089,49 +1088,49 @@ public class NoteActivity extends AppCompatActivity
         paintView.clear();
     }
 
-    private void getAllEntities(){
+    /*private void getAllEntities(){
 
-//        //Algoritmo per ripristinare le text entities
-//        List<MotionEntity> l = motionView.getEntities();
-////        Log.i(TAG,""+ l.size());
-//        if(l.size()>=1){
-//            Log.i(TAG, "" + l.get(0).getLayer().getRotationInDegrees());
-//            Log.i(TAG, "x: "+ l.get(0).getLayer().getX());
-//            Log.i(TAG, "y: "+ l.get(0).getLayer().getY());
-//            Log.i(TAG, "Scale: "+ l.get(0).getLayer().getScale());
-//            TextEntity textEntity = (TextEntity) l.get(0);
-//            Log.i(TAG, "Text: "+ textEntity.getLayer().getText());
-//            Log.i(TAG, "Size Font: "+ textEntity.getLayer().getFont().getTypeface());
-//            Log.i(TAG, "Size Font: "+ textEntity.getLayer().getFont().getSize());
-//
-//        }
-//
-//        final List<String> fonts = fontProvider.getFontNames();
-//        String searchString = "Lato";
-//        int index = -1;
-//        for (int i=0;i<fonts.size();i++) {
-//            if (fonts.get(i).equals(searchString)) {
-//                index = i;
-//                break;
-//            }
-//        }
-//
-//        TextEntity t = (TextEntity) l.get(0);
-//        t.getLayer().setX((float) -0.02777778);
-//        t.getLayer().setY((float) 0.72161454);
-//        t.getLayer().getFont().setTypeface(fonts.get(index));
-//        t.updateEntity();
-//        t.getLayer().setRotationInDegrees(45);
+        //Algoritmo per ripristinare le text entities
+        List<MotionEntity> l = motionView.getEntities();
+//        Log.i(TAG,""+ l.size());
+        if(l.size()>=1){
+            Log.i(TAG, "" + l.get(0).getLayer().getRotationInDegrees());
+            Log.i(TAG, "x: "+ l.get(0).getLayer().getX());
+            Log.i(TAG, "y: "+ l.get(0).getLayer().getY());
+            Log.i(TAG, "Scale: "+ l.get(0).getLayer().getScale());
+            TextEntity textEntity = (TextEntity) l.get(0);
+            Log.i(TAG, "Text: "+ textEntity.getLayer().getText());
+            Log.i(TAG, "Size Font: "+ textEntity.getLayer().getFont().getTypeface());
+            Log.i(TAG, "Size Font: "+ textEntity.getLayer().getFont().getSize());
+
+        }
+
+        final List<String> fonts = fontProvider.getFontNames();
+        String searchString = "Lato";
+        int index = -1;
+        for (int i=0;i<fonts.size();i++) {
+            if (fonts.get(i).equals(searchString)) {
+                index = i;
+                break;
+            }
+        }
+
+        TextEntity t = (TextEntity) l.get(0);
+        t.getLayer().setX((float) -0.02777778);
+        t.getLayer().setY((float) 0.72161454);
+        t.getLayer().getFont().setTypeface(fonts.get(index));
+        t.updateEntity();
+        t.getLayer().setRotationInDegrees(45);
 
         String id = "jLCqygWwccVyD6a8slzqX2j2unq2";
-//        String child = dbTextNotes.push().getKey();
-//        TextEntityData te = new TextEntityData(id,(float) -0.02777778,(float) 0.72161454, t.getLayer().getText(), "Lato" , 45,t.getLayer().getScale() );
-//        dbTextNotes.child(child).setValue(te);
-//        Toast.makeText(this, "Note Added", Toast.LENGTH_SHORT).show();
-        //Algoritmo per ripristinare le Sticker entity
-//        ImageEntity pica = (ImageEntity)l.get(1);
-//        pica.getLayer().setX((float) -0.02777778);
-//        pica.getLayer().setY((float) 0.72161454);
+        String child = dbTextNotes.push().getKey();
+        TextEntityData te = new TextEntityData(id,(float) -0.02777778,(float) 0.72161454, t.getLayer().getText(), "Lato" , 45,t.getLayer().getScale() );
+        dbTextNotes.child(child).setValue(te);
+        Toast.makeText(this, "Note Added", Toast.LENGTH_SHORT).show();
+        Algoritmo per ripristinare le Sticker entity
+        ImageEntity pica = (ImageEntity)l.get(1);
+        pica.getLayer().setX((float) -0.02777778);
+        pica.getLayer().setY((float) 0.72161454);
 
         Query query = dbTextNotes.orderByChild("userId").equalTo(id);
         query.addListenerForSingleValueEvent(new ValueEventListener() {
@@ -1149,14 +1148,14 @@ public class NoteActivity extends AppCompatActivity
             }
         });
 
-    }
+    }*/
 
     private void SaveNote() {
         //Algoritmo per ripristinare le text entities
         List<MotionEntity> l = motionView.getEntities();
         NoteEntityData n;
         String title = editTextTitle.getText().toString();
-        if(title == ""){
+        if(title.equals("")){
             title = "No Title Note...";
         }
 
@@ -1178,7 +1177,7 @@ public class NoteActivity extends AppCompatActivity
         int idImage = 0;
         String drawUrl = uploadDrawImage();
         n.setDrawUrl(drawUrl);
-//
+
         for (int i = 0; i < l.size(); i++){
             if(l.get(i) instanceof TextEntity){
                 Log.i(TAG,"Text Sticker");
@@ -1733,7 +1732,7 @@ public class NoteActivity extends AppCompatActivity
         String sourceString = "<b>" + stringTitleCalendar.toUpperCase() + "</b> " + "<br/>" + date;
         calendarSticker.setText(Html.fromHtml(sourceString));
         calendarSticker.setTextSize(20);
-        calendarSticker.setPadding(10,10,10,10);
+        calendarSticker.setPadding(20,20,20,20);
         calendarSticker.setTextColor(getResources().getColor(R.color.colorPrimary));
 
 
@@ -1742,9 +1741,25 @@ public class NoteActivity extends AppCompatActivity
         calendarSticker.setGravity(Gravity.CENTER);
         calendarSticker.bringToFront();
 
+//        calendarSticker.setOnLongClickListener(new View.OnLongClickListener() {
+//            @Override
+//            public boolean onLongClick(View v) {
+//                // TODO Auto-generated method stub
+//
+//                calendarSticker.setVisibility(View.GONE);
+//                //((ConstraintLayout)calendarSticker.getParent()).removeView(calendarSticker);
+//                return true;
+//            }
+//        });
+
+
         calendarSticker.setOnTouchListener(new View.OnTouchListener() {
+            private static final int MIN_CLICK_DURATION = 1000;
+            private long startClickTime;
             @Override
             public boolean onTouch(View v, MotionEvent event) {
+
+
                 switch (event.getActionMasked()) {
                     case MotionEvent.ACTION_DOWN:
                         dX = v.getX() - event.getRawX();
@@ -1861,7 +1876,7 @@ public class NoteActivity extends AppCompatActivity
                     AddStickerCalendar();
                 }
 
-                if(localPhotoBackgroungUrl != "" && cloudPhotoUrl != ""){
+                if(!localPhotoBackgroungUrl.equals("") && !cloudPhotoUrl.equals("")){
                     changePhotoBackground(localPhotoBackgroungUrl,cloudPhotoUrl);
                 }
 
@@ -1879,29 +1894,5 @@ public class NoteActivity extends AppCompatActivity
 
 
     }
-
-
-
-    /*public class UploadPhotoService extends Service{
-
-        @Nullable
-        @Override
-        public IBinder onBind(Intent intent) {
-            return null;
-        }
-
-        @Override
-        public void onCreate() {
-            super.onCreate();
-            uploadPhotoOnFirebase(localPhotoBackgroungUrl);
-        }
-
-        @Override
-        public void onDestroy() {
-            super.onDestroy();
-        }
-    }*/
-
-
 
 }

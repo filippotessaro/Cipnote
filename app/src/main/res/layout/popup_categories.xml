@@ -18,6 +18,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1"
+            android:drawableLeft="@drawable/ic_check_box"
             android:text="@string/classic" />
 
         <RadioButton
@@ -25,12 +26,14 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1"
+            android:drawableLeft="@drawable/ic_work"
             android:text="@string/work" />
 
         <RadioButton
             android:id="@+id/family"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:drawableLeft="@drawable/ic_family"
             android:layout_weight="1"
             android:text="@string/family" />
 
@@ -38,6 +41,7 @@
             android:id="@+id/importantevent"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:drawableLeft="@drawable/ic_star"
             android:layout_weight="1"
             android:text="@string/importantevent" />
 
@@ -45,6 +49,7 @@
             android:id="@+id/school"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:drawableLeft="@drawable/ic_school"
             android:layout_weight="1"
             android:text="@string/school" />
 
@@ -52,6 +57,7 @@
             android:id="@+id/sport"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:drawableLeft="@drawable/ic_sport"
             android:layout_weight="1"
             android:text="Sport" />
     </RadioGroup>

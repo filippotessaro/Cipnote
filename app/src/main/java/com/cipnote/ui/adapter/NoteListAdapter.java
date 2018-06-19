@@ -26,6 +26,8 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Filter;
+import android.widget.Filterable;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.RadioGroup;
@@ -62,13 +64,14 @@ import java.util.List;
  * Created by ravi on 26/09/17.
  */
 
-public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.MyViewHolder> {
+public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.MyViewHolder> implements Filterable{
     private Context context;
     private List<NoteEntityData> noteList;
+    private List<NoteEntityData> noteListFiltered;
     String[] allColors;
 
 
-    public class MyViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
+    public class MyViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         public TextView name, description, dateModified;
         public ImageView thumbnail;
         public RelativeLayout viewBackground, viewForeground;
@@ -108,12 +111,15 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.MyView
             context.startActivity(i);
 
         }
+
+
     }
 
 
     public NoteListAdapter(Context context, List<NoteEntityData> notelist) {
         this.context = context;
         this.noteList = notelist;
+        this.noteListFiltered = notelist;
     }
 
     @Override
@@ -127,7 +133,7 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.MyView
 
     @Override
     public void onBindViewHolder(final MyViewHolder holder, final int position) {
-        final NoteEntityData note = noteList.get(position);
+        final NoteEntityData note = noteListFiltered.get(position);
         holder.name.setText(note.getTitle());
         holder.description.setText(note.getDescription());
 
@@ -244,7 +250,7 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.MyView
                 holder.category.setImageResource(R.drawable.ic_family);
                 break;
             case 3:
-                holder.category.setImageResource(R.drawable.ic_beach);
+                holder.category.setImageResource(R.drawable.ic_star);
                 break;
             case 4:
                 holder.category.setImageResource(R.drawable.ic_school);
@@ -266,7 +272,7 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.MyView
 
     @Override
     public int getItemCount() {
-        return noteList.size();
+        return noteListFiltered.size();
     }
 
     public void removeItem(int position) {
@@ -293,6 +299,41 @@ public class NoteListAdapter extends RecyclerView.Adapter<NoteListAdapter.MyView
         }
         s += "\ncreated with ❤️ by CipNote";
         return s;
+    }
+
+    @Override
+    public Filter getFilter() {
+        return new Filter() {
+            @Override
+            protected FilterResults performFiltering(CharSequence charSequence) {
+                String charString = charSequence.toString();
+                if (charString.isEmpty()) {
+                    noteListFiltered = noteList;
+                } else {
+                    List<NoteEntityData> filteredList = new ArrayList<>();
+                    for (NoteEntityData row : noteList) {
+
+                        // name match condition. this might differ depending on your requirement
+                        // here we are looking for name or phone number match
+                        if (row.getTitle().toLowerCase().contains(charString.toLowerCase()) || row.getDescription().contains(charSequence)) {
+                            filteredList.add(row);
+                        }
+                    }
+
+                    noteListFiltered = filteredList;
+                }
+
+                FilterResults filterResults = new FilterResults();
+                filterResults.values = noteListFiltered;
+                return filterResults;
+            }
+
+            @Override
+            protected void publishResults(CharSequence charSequence, FilterResults filterResults) {
+                noteListFiltered = (ArrayList<NoteEntityData>) filterResults.values;
+                notifyDataSetChanged();
+            }
+        };
     }
 
 
