@@ -20,6 +20,7 @@ android {
 
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
+    //noinspection GradleCompatible
     implementation 'com.android.support:appcompat-v7:27.1.1'
     implementation 'com.android.support:design:27.1.1'
     implementation 'com.android.support:recyclerview-v7:27.1.1'
@@ -43,6 +44,7 @@ dependencies {
     implementation 'commons-io:commons-io:20030203.000550'
     implementation 'ai.api:sdk:2.0.7@aar'
     implementation 'ai.api:libai:1.6.12'
+    implementation 'com.facebook.shimmer:shimmer:0.1.0@aar'
 }
 
 apply plugin: 'com.google.gms.google-services'

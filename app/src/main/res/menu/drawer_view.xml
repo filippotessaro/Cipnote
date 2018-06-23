@@ -12,36 +12,5 @@
 
     </group>
 
-    <item android:title="@string/categories">
-        <menu>
-            <item
-                android:id="@+id/nav_all"
 
-                android:title="All Categories" />
-            <item
-                android:id="@+id/nav_memo"
-                android:icon="@drawable/ic_check_box"
-                android:title="Memo" />
-            <item
-                android:id="@+id/nav_work"
-                android:icon="@drawable/ic_work"
-                android:title="@string/work" />
-            <item
-                android:id="@+id/nav_family"
-                android:icon="@drawable/ic_family"
-                android:title="@string/family" />
-            <item
-                android:id="@+id/nav_star"
-                android:icon="@drawable/ic_star"
-                android:title="@string/importantevent" />
-            <item
-                android:id="@+id/nav_school"
-                android:icon="@drawable/ic_school"
-                android:title="@string/school" />
-            <item
-                android:id="@+id/nav_sport"
-                android:icon="@drawable/ic_sport"
-                android:title="Sport" />
-        </menu>
-    </item>
 </menu>

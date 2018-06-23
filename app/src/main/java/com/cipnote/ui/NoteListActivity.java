@@ -38,6 +38,7 @@ import com.cipnote.data.NoteEntityData;
 import com.cipnote.multitouch.RecyclerItemTouchHelper;
 import com.cipnote.profile.ProfileActivity;
 import com.cipnote.ui.adapter.NoteListAdapter;
+import com.facebook.shimmer.ShimmerFrameLayout;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.ChildEventListener;
@@ -66,6 +67,7 @@ public class NoteListActivity extends AppCompatActivity implements RecyclerItemT
     ImageView imm_view;
     TextView txt_name, txt_email;
     private SearchView searchView;
+    private ShimmerFrameLayout mShimmerViewContainer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -88,6 +90,7 @@ public class NoteListActivity extends AppCompatActivity implements RecyclerItemT
 
         listNotes = new ArrayList<>();
 
+        mShimmerViewContainer = findViewById(R.id.shimmer_view_container);
 
 
         ItemTouchHelper.SimpleCallback itemTouchHelperCallback = new RecyclerItemTouchHelper(0, ItemTouchHelper.LEFT, (RecyclerItemTouchHelper.RecyclerItemTouchHelperListener) this);
@@ -170,6 +173,18 @@ public class NoteListActivity extends AppCompatActivity implements RecyclerItemT
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+        mShimmerViewContainer.startShimmerAnimation();
+    }
+
+    @Override
+    public void onPause() {
+        mShimmerViewContainer.stopShimmerAnimation();
+        super.onPause();
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
 
         switch (item.getItemId()) {
@@ -203,6 +218,7 @@ public class NoteListActivity extends AppCompatActivity implements RecyclerItemT
         new GetDataFromFirebase().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 
         dbTextNotes = FirebaseDatabase.getInstance().getReference("textnote");
+        dbTextNotes.keepSynced(true);
         currentFirebaseUser = FirebaseAuth.getInstance().getCurrentUser() ;
         String userId = currentFirebaseUser.getUid();
         Query query = dbTextNotes.orderByChild("userId").equalTo(userId);
@@ -229,6 +245,9 @@ public class NoteListActivity extends AppCompatActivity implements RecyclerItemT
                 recyclerView.setItemAnimator(new DefaultItemAnimator());
                 recyclerView.addItemDecoration(new DividerItemDecoration(NoteListActivity.this, DividerItemDecoration.VERTICAL));
                 recyclerView.setAdapter(mAdapter);
+
+                mShimmerViewContainer.stopShimmerAnimation();
+                mShimmerViewContainer.setVisibility(View.GONE);
 
             }
 
