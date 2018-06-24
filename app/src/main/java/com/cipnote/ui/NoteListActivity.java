@@ -96,7 +96,7 @@ public class NoteListActivity extends AppCompatActivity implements RecyclerItemT
         ItemTouchHelper.SimpleCallback itemTouchHelperCallback = new RecyclerItemTouchHelper(0, ItemTouchHelper.LEFT, (RecyclerItemTouchHelper.RecyclerItemTouchHelperListener) this);
         new ItemTouchHelper(itemTouchHelperCallback).attachToRecyclerView(recyclerView);
 
-        ItemTouchHelper.SimpleCallback itemTouchHelperCallback1 = new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT | ItemTouchHelper.UP) {
+        ItemTouchHelper.SimpleCallback itemTouchHelperCallback1 = new ItemTouchHelper.SimpleCallback(1, ItemTouchHelper.RIGHT ) {
             @Override
             public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
                 return false;
@@ -264,6 +264,7 @@ public class NoteListActivity extends AppCompatActivity implements RecyclerItemT
         if (viewHolder instanceof NoteListAdapter.MyViewHolder) {
             // get the removed item name to display it in snack bar
             String name = listNotes.get(viewHolder.getAdapterPosition()).getTitle();
+            Log.i("DIR", "Direction: "+ direction);
 
             // backup of removed item for undo purpose
             final NoteEntityData deletedItem = listNotes.get(viewHolder.getAdapterPosition());

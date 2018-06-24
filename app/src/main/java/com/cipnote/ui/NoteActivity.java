@@ -412,7 +412,7 @@ public class NoteActivity extends AppCompatActivity
             builder.setMessage(R.string.doyouwant);
 
             // add a button
-            builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            builder.setPositiveButton("YES", new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int id) {
                     SaveNote();
                 }
@@ -420,6 +420,8 @@ public class NoteActivity extends AppCompatActivity
             builder.setNegativeButton("NO", new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int id) {
                     finish();
+//                    Intent intent = new Intent(NoteActivity.this, NoteListActivity.class);
+//                    startActivity(intent);
                 }
             });
 
@@ -1798,7 +1800,7 @@ public class NoteActivity extends AppCompatActivity
                 editTextTitle.setText(restoredNote.getTitle());//Title
                 edit_text_scroll_view.setText(restoredNote.getDescription());//Description in swipe view
 
-                List<TextEntityData> list = restoredNote.getTextEntityDataList();
+                //List<TextEntityData> list = restoredNote.getTextEntityDataList();
 
                 loadImagePaintView(restoredNote.getDrawUrl());
                 if(restoredNote.getCheckboxList().size()>0){
@@ -1809,37 +1811,46 @@ public class NoteActivity extends AppCompatActivity
                     recyclerView.setLayoutManager(llm);
                 }
 
-                List<String> fonts = fontProvider.getFontNames();
-                int index = -1;
-                //Restore Text Entity
-                for(int i=0; i < list.size(); i++){
+                motionView.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        List<TextEntityData> list = restoredNote.getTextEntityDataList();
+                        List<String> fonts = fontProvider.getFontNames();
+                        int index = -1;
+                        //Restore Text Entity
+                        for(int i=0; i < list.size(); i++){
 
-                    String searchString = list.get(i).getFont();
+                            String searchString = list.get(i).getFont();
 
-                    for (int j=0;j<fonts.size();j++) {
-                        if (fonts.get(j).equals(searchString)) {
-                            index = j;
-                            break;
+                            for (int j=0;j<fonts.size();j++) {
+                                if (fonts.get(j).equals(searchString)) {
+                                    index = j;
+                                    break;
+                                }
+                            }
+
+
+
+                            TextLayer textLayer = createTextLayer(list.get(i).getText());
+                            textLayer.getFont().setTypeface(fonts.get(index));
+                            textLayer.getFont().setColor(list.get(i).getColor());
+
+                            TextEntity textEntity = new TextEntity(textLayer, motionView.getWidth(),
+                                    motionView.getHeight(), fontProvider);
+
+                            textEntity.getLayer().setScale(list.get(i).getScale());
+                            textEntity.getLayer().setRotationInDegrees(list.get(i).getDeg());
+                            textEntity.getLayer().setX(list.get(i).getX());
+                            textEntity.getLayer().setY(list.get(i).getY());
+                            textEntity.updateEntity();
+                            motionView.addEntity(textEntity);
+
+                            //motionView.invalidate();
+
                         }
                     }
+                });
 
-                    TextLayer textLayer = createTextLayer(list.get(i).getText());
-                    textLayer.getFont().setTypeface(fonts.get(index));
-                    textLayer.getFont().setColor(list.get(i).getColor());
-
-                    TextEntity textEntity = new TextEntity(textLayer, motionView.getWidth(),
-                            motionView.getHeight(), fontProvider);
-
-                    textEntity.getLayer().setScale(list.get(i).getScale());
-                    textEntity.getLayer().setRotationInDegrees(list.get(i).getDeg());
-                    textEntity.getLayer().setX(list.get(i).getX());
-                    textEntity.getLayer().setY(list.get(i).getY());
-                    textEntity.updateEntity();
-                    motionView.addEntity(textEntity);
-
-                    motionView.invalidate();
-
-                }
                 //setto gli indirizzi per le foto
                 localPhotoBackgroungUrl = restoredNote.getLocalPhotoUrl();
                 cloudPhotoUrl = restoredNote.getCloudPhotoUrl();
