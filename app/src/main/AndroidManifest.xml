@@ -57,14 +57,15 @@
         <activity
             android:name=".camera.CameraPermissionActivity"
             android:screenOrientation="portrait" />
-        <activity
-            android:name=".camera.PhotoRedirectActivity"
-            android:screenOrientation="portrait" />
+        <!--<activity-->
+            <!--android:name=".camera.PhotoRedirectActivity"-->
+            <!--android:screenOrientation="portrait" />-->
         <activity
             android:name=".ui.NoteActivity"
             android:screenOrientation="portrait" />
         <activity android:name=".ui.NoteListActivity"></activity>
 
+        <service android:enabled="true" android:icon="@mipmap/ic_launcher_round" android:name=".UploadService.MyUploadService"></service>
 
     </application>
 

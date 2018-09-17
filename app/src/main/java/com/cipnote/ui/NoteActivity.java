@@ -47,8 +47,10 @@ import com.cipnote.data.ImageEntityData;
 import com.cipnote.data.NoteEntityData;
 import com.cipnote.data.TextEntityData;
 import com.cipnote.ui.adapter.ListAdapter;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -884,7 +886,7 @@ public class NoteActivity extends AppCompatActivity
                     Log.i(TAG,"Photo Url: " + url);
                     if(url != null || !url.equals("")){
                         changePhotoBackground(url,"");
-                        if(cloudPhotoUrl == ""){
+                        if(cloudPhotoUrl.equals("")){
                             cloudPhotoUrl = UUID.randomUUID().toString();
                         }else {
                             cloudPhotoUrl = restoredNote.getCloudPhotoUrl();
@@ -913,7 +915,14 @@ public class NoteActivity extends AppCompatActivity
 
                         Toast.makeText(NoteActivity.this, "Failed "+e.getMessage(), Toast.LENGTH_SHORT).show();
                     }
+                })
+                .addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
+                        finish();
+                    }
                 });
+
 
     }
 
@@ -990,9 +999,9 @@ public class NoteActivity extends AppCompatActivity
 
     public String uploadDrawImage() {
 
-        final ProgressDialog progressDialog = new ProgressDialog(this);
-        progressDialog.setTitle(R.string.upload);
-        progressDialog.show();
+        //final ProgressDialog progressDialog = new ProgressDialog(this);
+        //progressDialog.setTitle(R.string.upload);
+        //progressDialog.show();
         String url = "";
 
         if(restoredNote != null){
@@ -1008,25 +1017,18 @@ public class NoteActivity extends AppCompatActivity
                 .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                     @Override
                     public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                        progressDialog.dismiss();
+                        //progressDialog.dismiss();
                         Toast.makeText(NoteActivity.this, "Uploaded", Toast.LENGTH_SHORT).show();
                     }
                 })
                 .addOnFailureListener(new OnFailureListener() {
                     @Override
                     public void onFailure(@NonNull Exception e) {
-                        progressDialog.dismiss();
+                        //progressDialog.dismiss();
                         Toast.makeText(NoteActivity.this, "Failed "+e.getMessage(), Toast.LENGTH_SHORT).show();
                     }
-                })
-                .addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
-                    @Override
-                    public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {
-                        double progress = (100.0*taskSnapshot.getBytesTransferred()/taskSnapshot
-                                .getTotalByteCount());
-                        progressDialog.setMessage("Uploaded "+(int)progress+"%");
-                    }
                 });
+
         return url;
     }
 
