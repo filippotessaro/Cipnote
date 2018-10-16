@@ -39,6 +39,7 @@ import android.support.v7.app.AppCompatActivity;
 
 import com.bumptech.glide.Glide;
 import com.cipnote.Calendar.RangeTimePickerDialog;
+import com.cipnote.UploadService.MyUploadService;
 import com.cipnote.camera.CameraPermissionActivity;
 import com.cipnote.camera.PhotoActivity;
 import com.cipnote.camera.RunTimePermission;
@@ -898,33 +899,33 @@ public class NoteActivity extends AppCompatActivity
         }
     }
 
-    private void uploadPhotoOnFirebase(String url) {
-        File file = new File(url);
-
-        StorageReference ref = storageReference.child("images/"+ cloudPhotoUrl);
-        ref.putFile(Uri.fromFile(file))
-                .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                    @Override
-                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                        Toast.makeText(NoteActivity.this, "Photo Uploaded", Toast.LENGTH_SHORT).show();
-                    }
-                })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-
-                        Toast.makeText(NoteActivity.this, "Failed "+e.getMessage(), Toast.LENGTH_SHORT).show();
-                    }
-                })
-                .addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
-                        finish();
-                    }
-                });
-
-
-    }
+//    private void uploadPhotoOnFirebase(String url) {
+//        File file = new File(url);
+//
+//        StorageReference ref = storageReference.child("images/"+ cloudPhotoUrl);
+//        ref.putFile(Uri.fromFile(file))
+//                .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+//                    @Override
+//                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+//                        Toast.makeText(NoteActivity.this, "Photo Uploaded", Toast.LENGTH_SHORT).show();
+//                    }
+//                })
+//                .addOnFailureListener(new OnFailureListener() {
+//                    @Override
+//                    public void onFailure(@NonNull Exception e) {
+//
+//                        Toast.makeText(NoteActivity.this, "Failed "+e.getMessage(), Toast.LENGTH_SHORT).show();
+//                    }
+//                })
+//                .addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
+//                    @Override
+//                    public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
+//                        finish();
+//                    }
+//                });
+//
+//
+//    }
 
     private void changePhotoBackground(String locUrl, String cloudUrl) {
         Log.i(TAG, locUrl);
@@ -1163,7 +1164,7 @@ public class NoteActivity extends AppCompatActivity
             title = "No Title Note...";
         }
 
-        if(restoredIdNote != ""){
+        if(!restoredIdNote.contentEquals("")){
             n = new NoteEntityData(restoredIdNote, userId , title, edit_text_scroll_view.getText().toString());
             n.setCategory(restoredNote.getCategory());
             n.setDateCreation(restoredNote.getDateCreation());
@@ -1179,8 +1180,10 @@ public class NoteActivity extends AppCompatActivity
         String font, contentText;
         int color;
         int idImage = 0;
-        String drawUrl = uploadDrawImage();
-        n.setDrawUrl(drawUrl);
+
+        //TODO upload of a draw
+        //String drawUrl = uploadDrawImage();
+        //n.setDrawUrl(drawUrl);
 
         for (int i = 0; i < l.size(); i++){
             if(l.get(i) instanceof TextEntity){
@@ -1211,34 +1214,32 @@ public class NoteActivity extends AppCompatActivity
         }
 
 
-        String child;
-        //Controllo se prima avevo creato l'entità
-        if(restoredIdNote!= ""){
-            child = restoredIdNote;
-        }else{
-            child = dbTextNotes.push().getKey();
-            n.setId(child);
-        }
+//        String child;
+//        //Controllo se prima avevo creato l'entità
+//        if(restoredIdNote!= ""){
+//            child = restoredIdNote;
+//        }else{
+//            child = dbTextNotes.push().getKey();
+//            n.setId(child);
+//        }
         n.setBackgroundColorIndex(colorIndex);
-
-
 
         n.setLocalPhotoUrl(localPhotoBackgroungUrl);
         n.setCalendarEntity(calendarEntity);
 
-        if(cloudPhotoUrl!=""){
+        if(!cloudPhotoUrl.contentEquals("")){
             n.setCloudPhotoUrl(cloudPhotoUrl);
-            uploadPhotoOnFirebase(localPhotoBackgroungUrl);
-
+            //uploadPhotoOnFirebase(localPhotoBackgroungUrl);
         }
 
-        dbTextNotes.child(child).setValue(n);
+        //dbTextNotes.child(child).setValue(n);
         Toast.makeText(this, R.string.addnote, Toast.LENGTH_SHORT).show();
 
-        Intent intent = new Intent(NoteActivity.this, NoteListActivity.class);
-        startActivity(intent);
-            //finish();
-        //startService(new Intent(this, UploadPhotoService.class));
+        startService(new Intent(this, MyUploadService.class)
+                .putExtra("NOTE_PASSED", n)
+                .setAction(MyUploadService.ACTION_UPLOAD));
+
+        finish();
 
 
     }

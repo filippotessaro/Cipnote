@@ -1,6 +1,9 @@
 package com.cipnote.data;
 
-public class ImageEntityData {
+import android.os.Parcel;
+import android.os.Parcelable;
+
+public class ImageEntityData implements Parcelable {
 
     private float x,y;
     private int logo;
@@ -17,6 +20,26 @@ public class ImageEntityData {
         this.deg = deg;
         this.scale = scale;
     }
+
+    protected ImageEntityData(Parcel in) {
+        x = in.readFloat();
+        y = in.readFloat();
+        logo = in.readInt();
+        deg = in.readInt();
+        scale = in.readFloat();
+    }
+
+    public static final Creator<ImageEntityData> CREATOR = new Creator<ImageEntityData>() {
+        @Override
+        public ImageEntityData createFromParcel(Parcel in) {
+            return new ImageEntityData(in);
+        }
+
+        @Override
+        public ImageEntityData[] newArray(int size) {
+            return new ImageEntityData[size];
+        }
+    };
 
     public float getX() {
         return x;
@@ -56,6 +79,20 @@ public class ImageEntityData {
 
     public void setScale(float scale) {
         this.scale = scale;
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeFloat(x);
+        dest.writeFloat(y);
+        dest.writeInt(logo);
+        dest.writeInt(deg);
+        dest.writeFloat(scale);
     }
 }
 

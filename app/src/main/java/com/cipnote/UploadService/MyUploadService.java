@@ -11,15 +11,20 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 import com.cipnote.R;
+import com.cipnote.data.NoteEntityData;
 import com.cipnote.ui.NoteListActivity;
 import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+
+import java.io.File;
 
 /**
  * Service to handle uploading files to Firebase Storage.
@@ -37,8 +42,12 @@ public class MyUploadService extends MyBaseTaskService {
     public static final String EXTRA_FILE_URI = "extra_file_uri";
     public static final String EXTRA_DOWNLOAD_URL = "extra_download_url";
 
+    private NoteEntityData EXTRA_NOTE;
+
     // [START declare_ref]
     private StorageReference mStorageRef;
+    private DatabaseReference dbTextNotes = FirebaseDatabase.getInstance().getReference("textnote");
+
     // [END declare_ref]
 
     @Override
@@ -59,25 +68,35 @@ public class MyUploadService extends MyBaseTaskService {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.d(TAG, "onStartCommand:" + intent + ":" + startId);
-        if (ACTION_UPLOAD.equals(intent.getAction())) {
-            Uri fileUri = intent.getParcelableExtra(EXTRA_FILE_URI);
 
-            // Make sure we have permission to read the data
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-                getContentResolver().takePersistableUriPermission(
-                        fileUri,
-                        Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        if (ACTION_UPLOAD.equals(intent.getAction())) {
+            EXTRA_NOTE = intent.getParcelableExtra("NOTE_PASSED");
+            //Log.i("MYUPLOADSERVICE", EXTRA_NOTE.toString());
+
+            //dbTextNotes.keepSynced(true);
+
+            String child = "";
+            //Controllo se prima avevo creato l'entità
+            if(!EXTRA_NOTE.getId().contentEquals("")){
+                child = EXTRA_NOTE.getId();
+            }else{
+                child = dbTextNotes.push().getKey();
+                EXTRA_NOTE.setId(child);
             }
 
-            uploadFromUri(fileUri);
+            //UPLOAD THE NOTE IN FIREBASE
+            dbTextNotes.child(child).setValue(EXTRA_NOTE);
+
+            if(!EXTRA_NOTE.getLocalPhotoUrl().equals(""))
+                uploadFromUri(EXTRA_NOTE.getLocalPhotoUrl());
         }
 
         return START_REDELIVER_INTENT;
     }
 
     // [START upload_from_uri]
-    private void uploadFromUri(final Uri fileUri) {
-        Log.d(TAG, "uploadFromUri:src:" + fileUri.toString());
+    private void uploadFromUri(final String url) {
+        Log.d(TAG, "uploadFromUri:src:" + url);
 
         // [START_EXCLUDE]
         taskStarted();
@@ -86,13 +105,12 @@ public class MyUploadService extends MyBaseTaskService {
 
         // [START get_child_ref]
         // Get a reference to store file at photos/<FILENAME>.jpg
-        final StorageReference photoRef = mStorageRef.child("photos")
-                .child(fileUri.getLastPathSegment());
+        final StorageReference photoRef = mStorageRef.child("images/"+ EXTRA_NOTE.getCloudPhotoUrl());
         // [END get_child_ref]
-
+        final File file = new File(url);
         // Upload file to Firebase Storage
         Log.d(TAG, "uploadFromUri:dst:" + photoRef.getPath());
-        photoRef.putFile(fileUri).
+        photoRef.putFile(Uri.fromFile(file)).
                 addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
                     @Override
                     public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {
@@ -122,8 +140,8 @@ public class MyUploadService extends MyBaseTaskService {
                         Log.d(TAG, "uploadFromUri: getDownloadUri success");
 
                         // [START_EXCLUDE]
-                        broadcastUploadFinished(downloadUri, fileUri);
-                        showUploadFinishedNotification(downloadUri, fileUri);
+                        broadcastUploadFinished(downloadUri, Uri.fromFile(file));
+                        showUploadFinishedNotification(downloadUri, Uri.fromFile(file));
                         taskCompleted();
                         // [END_EXCLUDE]
                     }
@@ -135,8 +153,8 @@ public class MyUploadService extends MyBaseTaskService {
                         Log.w(TAG, "uploadFromUri:onFailure", exception);
 
                         // [START_EXCLUDE]
-                        broadcastUploadFinished(null, fileUri);
-                        showUploadFinishedNotification(null, fileUri);
+                        broadcastUploadFinished(null, Uri.fromFile(file));
+                        showUploadFinishedNotification(null, Uri.fromFile(file));
                         taskCompleted();
                         // [END_EXCLUDE]
                     }

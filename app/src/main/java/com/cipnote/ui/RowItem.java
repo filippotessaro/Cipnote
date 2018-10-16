@@ -1,6 +1,9 @@
 package com.cipnote.ui;
 
-public class RowItem {
+import android.os.Parcel;
+import android.os.Parcelable;
+
+public class RowItem implements Parcelable {
 
     private boolean done;
     private String task;
@@ -12,6 +15,23 @@ public class RowItem {
 
     public RowItem() {
     }
+
+    protected RowItem(Parcel in) {
+        done = in.readByte() != 0;
+        task = in.readString();
+    }
+
+    public static final Creator<RowItem> CREATOR = new Creator<RowItem>() {
+        @Override
+        public RowItem createFromParcel(Parcel in) {
+            return new RowItem(in);
+        }
+
+        @Override
+        public RowItem[] newArray(int size) {
+            return new RowItem[size];
+        }
+    };
 
     public boolean isDone() {
         return done;
@@ -27,5 +47,16 @@ public class RowItem {
 
     public void setTask(String task) {
         this.task = task;
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeByte((byte) (done ? 1 : 0));
+        dest.writeString(task);
     }
 }
