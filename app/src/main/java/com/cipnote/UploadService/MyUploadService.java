@@ -2,6 +2,7 @@ package com.cipnote.UploadService;
 
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
 import android.os.IBinder;
@@ -9,6 +10,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
+import android.util.LruCache;
 
 import com.cipnote.R;
 import com.cipnote.data.NoteEntityData;
@@ -24,6 +26,7 @@ import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 
 /**
@@ -47,6 +50,8 @@ public class MyUploadService extends MyBaseTaskService {
     // [START declare_ref]
     private StorageReference mStorageRef;
     private DatabaseReference dbTextNotes = FirebaseDatabase.getInstance().getReference("textnote");
+    private LruCache<String, Bitmap> mMemoryCache;
+
 
     // [END declare_ref]
 
@@ -69,6 +74,20 @@ public class MyUploadService extends MyBaseTaskService {
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.d(TAG, "onStartCommand:" + intent + ":" + startId);
 
+        final int maxMemory = (int) (Runtime.getRuntime().maxMemory() / 1024);
+
+        // Use 1/8th of the available memory for this memory cache.
+        final int cacheSize = maxMemory / 8;
+
+        mMemoryCache = new LruCache<String, Bitmap>(cacheSize) {
+            @Override
+            protected int sizeOf(String key, Bitmap bitmap) {
+                // The cache size will be measured in kilobytes rather than
+                // number of items.
+                return bitmap.getByteCount() / 1024;
+            }
+        };
+
         if (ACTION_UPLOAD.equals(intent.getAction())) {
             EXTRA_NOTE = intent.getParcelableExtra("NOTE_PASSED");
             //Log.i("MYUPLOADSERVICE", EXTRA_NOTE.toString());
@@ -88,14 +107,14 @@ public class MyUploadService extends MyBaseTaskService {
             dbTextNotes.child(child).setValue(EXTRA_NOTE);
 
             if(!EXTRA_NOTE.getLocalPhotoUrl().equals(""))
-                uploadFromUri(EXTRA_NOTE.getLocalPhotoUrl());
+                uploadFromUri(EXTRA_NOTE.getLocalPhotoUrl(), EXTRA_NOTE.getDrawUrl());
         }
 
         return START_REDELIVER_INTENT;
     }
 
     // [START upload_from_uri]
-    private void uploadFromUri(final String url) {
+    private void uploadFromUri(final String url, String drawURL) {
         Log.d(TAG, "uploadFromUri:src:" + url);
 
         // [START_EXCLUDE]
@@ -159,6 +178,28 @@ public class MyUploadService extends MyBaseTaskService {
                         // [END_EXCLUDE]
                     }
                 });
+
+            StorageReference ref = photoRef.child("draw/"+ drawURL);
+            Bitmap drawBitmap = getBitmapFromMemCache(drawURL);
+
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        drawBitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+            byte[] data = baos.toByteArray();
+            ref.putBytes(data)
+                    .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                    @Override
+                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                        //progressDialog.dismiss();
+                        //Toast.makeText(NoteActivity.this, "Uploaded", Toast.LENGTH_SHORT).show();
+                    }
+                    })
+                    .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        //progressDialog.dismiss();
+                        //Toast.makeText(NoteActivity.this, "Failed "+e.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                    });
     }
     // [END upload_from_uri]
 
@@ -203,6 +244,13 @@ public class MyUploadService extends MyBaseTaskService {
 
         return filter;
     }
+
+    public Bitmap getBitmapFromMemCache(String key) {
+        return mMemoryCache.get(key);
+    }
+
+
+
 
 }
 

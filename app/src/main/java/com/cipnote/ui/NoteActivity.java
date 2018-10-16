@@ -71,6 +71,7 @@ import android.support.v7.widget.RecyclerView;
 import android.text.Html;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.util.LruCache;
 import android.view.GestureDetector;
 import android.view.GestureDetector.OnGestureListener;
 import android.view.Gravity;
@@ -85,6 +86,7 @@ import android.widget.CheckBox;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ProgressBar;
@@ -209,6 +211,9 @@ public class NoteActivity extends AppCompatActivity
     private LinearLayoutManager llm;
     private CalendarEntity calendarEntity;
 
+    //caching for draw bitmaps
+    private LruCache<String, Bitmap> mMemoryCache;
+
 
     private final MotionView.MotionViewCallback motionViewCallback =
             new MotionView.MotionViewCallback() {
@@ -241,6 +246,23 @@ public class NoteActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_note);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+
+        // Get max available VM memory, exceeding this amount will throw an
+        // OutOfMemory exception. Stored in kilobytes as LruCache takes an
+        // int in its constructor.
+        final int maxMemory = (int) (Runtime.getRuntime().maxMemory() / 1024);
+
+        // Use 1/8th of the available memory for this memory cache.
+        final int cacheSize = maxMemory / 8;
+
+        mMemoryCache = new LruCache<String, Bitmap>(cacheSize) {
+            @Override
+            protected int sizeOf(String key, Bitmap bitmap) {
+                // The cache size will be measured in kilobytes rather than
+                // number of items.
+                return bitmap.getByteCount() / 1024;
+            }
+        };
 
 
         currentFirebaseUser = FirebaseAuth.getInstance().getCurrentUser() ;
@@ -1005,15 +1027,15 @@ public class NoteActivity extends AppCompatActivity
         //progressDialog.show();
         String url = "";
 
-        if(restoredNote != null){
+        /*if(restoredNote != null){
             if(restoredNote.getDrawUrl()!=""){
                 url = restoredNote.getDrawUrl();
             }
-        }else{
+        }else{*/
             url =UUID.randomUUID().toString();
-        }
+        //}
 
-        StorageReference ref = storageReference.child("draw/"+ url);
+        /*StorageReference ref = storageReference.child("draw/"+ url);
         ref.putBytes(paintView.convertBitmapToByteArray())
                 .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                     @Override
@@ -1028,7 +1050,8 @@ public class NoteActivity extends AppCompatActivity
                         //progressDialog.dismiss();
                         Toast.makeText(NoteActivity.this, "Failed "+e.getMessage(), Toast.LENGTH_SHORT).show();
                     }
-                });
+                });*/
+        addBitmapToMemoryCache(url, paintView.getDrawingCache());
 
         return url;
     }
@@ -1093,68 +1116,6 @@ public class NoteActivity extends AppCompatActivity
         paintView.clear();
     }
 
-    /*private void getAllEntities(){
-
-        //Algoritmo per ripristinare le text entities
-        List<MotionEntity> l = motionView.getEntities();
-//        Log.i(TAG,""+ l.size());
-        if(l.size()>=1){
-            Log.i(TAG, "" + l.get(0).getLayer().getRotationInDegrees());
-            Log.i(TAG, "x: "+ l.get(0).getLayer().getX());
-            Log.i(TAG, "y: "+ l.get(0).getLayer().getY());
-            Log.i(TAG, "Scale: "+ l.get(0).getLayer().getScale());
-            TextEntity textEntity = (TextEntity) l.get(0);
-            Log.i(TAG, "Text: "+ textEntity.getLayer().getText());
-            Log.i(TAG, "Size Font: "+ textEntity.getLayer().getFont().getTypeface());
-            Log.i(TAG, "Size Font: "+ textEntity.getLayer().getFont().getSize());
-
-        }
-
-        final List<String> fonts = fontProvider.getFontNames();
-        String searchString = "Lato";
-        int index = -1;
-        for (int i=0;i<fonts.size();i++) {
-            if (fonts.get(i).equals(searchString)) {
-                index = i;
-                break;
-            }
-        }
-
-        TextEntity t = (TextEntity) l.get(0);
-        t.getLayer().setX((float) -0.02777778);
-        t.getLayer().setY((float) 0.72161454);
-        t.getLayer().getFont().setTypeface(fonts.get(index));
-        t.updateEntity();
-        t.getLayer().setRotationInDegrees(45);
-
-        String id = "jLCqygWwccVyD6a8slzqX2j2unq2";
-        String child = dbTextNotes.push().getKey();
-        TextEntityData te = new TextEntityData(id,(float) -0.02777778,(float) 0.72161454, t.getLayer().getText(), "Lato" , 45,t.getLayer().getScale() );
-        dbTextNotes.child(child).setValue(te);
-        Toast.makeText(this, "Note Added", Toast.LENGTH_SHORT).show();
-        Algoritmo per ripristinare le Sticker entity
-        ImageEntity pica = (ImageEntity)l.get(1);
-        pica.getLayer().setX((float) -0.02777778);
-        pica.getLayer().setY((float) 0.72161454);
-
-        Query query = dbTextNotes.orderByChild("userId").equalTo(id);
-        query.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot snapshot) {
-                Log.i("CHeck","ENTRATO");
-                for (DataSnapshot user: snapshot.getChildren()) {
-                    Log.i(TAG,user.toString());
-                }
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-                Log.w(TAG, "getUser:onCancelled", databaseError.toException());
-            }
-        });
-
-    }*/
-
     private void SaveNote() {
         //Algoritmo per ripristinare le text entities
         List<MotionEntity> l = motionView.getEntities();
@@ -1182,8 +1143,8 @@ public class NoteActivity extends AppCompatActivity
         int idImage = 0;
 
         //TODO upload of a draw
-        //String drawUrl = uploadDrawImage();
-        //n.setDrawUrl(drawUrl);
+        String drawUrl = uploadDrawImage();
+        n.setDrawUrl(drawUrl);
 
         for (int i = 0; i < l.size(); i++){
             if(l.get(i) instanceof TextEntity){
@@ -1908,5 +1869,16 @@ public class NoteActivity extends AppCompatActivity
 
 
     }
+
+    public void addBitmapToMemoryCache(String key, Bitmap bitmap) {
+        if (getBitmapFromMemCache(key) == null) {
+            mMemoryCache.put(key, bitmap);
+        }
+    }
+
+    public Bitmap getBitmapFromMemCache(String key) {
+        return mMemoryCache.get(key);
+    }
+
 
 }
