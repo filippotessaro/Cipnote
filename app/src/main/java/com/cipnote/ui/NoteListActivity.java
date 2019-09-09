@@ -7,15 +7,14 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Build;
+import android.os.Bundle;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
 import android.support.v4.view.GravityCompat;
-import android.support.v4.view.MenuItemCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
@@ -28,27 +27,23 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
-import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
-
 import com.bumptech.glide.Glide;
 import com.cipnote.R;
 import com.cipnote.data.NoteEntityData;
 import com.cipnote.multitouch.RecyclerItemTouchHelper;
 import com.cipnote.profile.ProfileActivity;
 import com.cipnote.ui.adapter.NoteListAdapter;
+import com.cipnote.utils.Firebase.GetDataFromFirebase;
 import com.facebook.shimmer.ShimmerFrameLayout;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -66,7 +61,6 @@ public class NoteListActivity extends AppCompatActivity implements RecyclerItemT
     FirebaseAuth mAuth;
     ImageView imm_view;
     TextView txt_name, txt_email;
-    private SearchView searchView;
     private ShimmerFrameLayout mShimmerViewContainer;
 
     @Override
@@ -164,6 +158,7 @@ public class NoteListActivity extends AppCompatActivity implements RecyclerItemT
 
     private void setUserProfileInformation() {
         FirebaseUser user = mAuth.getCurrentUser();
+        assert user != null;
         Glide.with(this)
                 .load(user.getPhotoUrl())
                 .into(imm_view);
@@ -187,10 +182,9 @@ public class NoteListActivity extends AppCompatActivity implements RecyclerItemT
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
 
-        switch (item.getItemId()) {
-            case android.R.id.home:
-                mDrawerLayout.openDrawer(GravityCompat.START);
-                return true;
+        if (android.R.id.home == item.getItemId()) {
+            mDrawerLayout.openDrawer(GravityCompat.START);
+            return true;
         }
 
         int id = item.getItemId();
@@ -220,6 +214,7 @@ public class NoteListActivity extends AppCompatActivity implements RecyclerItemT
         dbTextNotes = FirebaseDatabase.getInstance().getReference("textnote");
         dbTextNotes.keepSynced(true);
         currentFirebaseUser = FirebaseAuth.getInstance().getCurrentUser() ;
+        assert currentFirebaseUser != null;
         String userId = currentFirebaseUser.getUid();
         Query query = dbTextNotes.orderByChild("userId").equalTo(userId);
 
@@ -294,23 +289,7 @@ public class NoteListActivity extends AppCompatActivity implements RecyclerItemT
 
 
 
-    private class GetDataFromFirebase extends AsyncTask<Void,Void,Boolean> {
 
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-        }
-
-        @Override
-        protected Boolean doInBackground(Void... voids) {
-            return false;
-        }
-
-        @Override
-        protected void onPostExecute(Boolean aBoolean) {
-            super.onPostExecute(aBoolean);
-        }
-    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -318,8 +297,9 @@ public class NoteListActivity extends AppCompatActivity implements RecyclerItemT
 
         // Associate searchable configuration with the SearchView
         SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
-        searchView = (SearchView) menu.findItem(R.id.action_search)
+        SearchView searchView = (SearchView) menu.findItem(R.id.action_search)
                 .getActionView();
+        assert searchManager != null;
         searchView.setSearchableInfo(searchManager
                 .getSearchableInfo(getComponentName()));
         searchView.setMaxWidth(Integer.MAX_VALUE);

@@ -62,7 +62,6 @@ public class PhotoActivity extends AppCompatActivity
     private Camera camera;
     private Handler customHandler = new Handler();
     int flag = 0;
-    private File tempFile = null;
     private Camera.PictureCallback jpegCallback;
     private GestureDetectorCompat gesture_object;
     private RunTimePermission runTimePermission;
@@ -71,8 +70,6 @@ public class PhotoActivity extends AppCompatActivity
     private SurfaceView imgSurface;
     private ImageView imgCapture;
     private ImageView imgFlashOnOff;
-    private ImageView imgSwipeCamera;
-    private Button GalleryBtn;
 
     public static final int PICK_IMAGE = 1;
     @Override
@@ -82,8 +79,8 @@ public class PhotoActivity extends AppCompatActivity
         setContentView(R.layout.activity_camera);
 
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        GalleryBtn = (Button)findViewById(R.id.GalleryBtn);
-        GalleryBtn.setOnClickListener(new View.OnClickListener() {
+        Button galleryBtn = (Button) findViewById(R.id.GalleryBtn);
+        galleryBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 openGalleryIntent();
@@ -155,12 +152,6 @@ public class PhotoActivity extends AppCompatActivity
         finish();
     }
 
-    private void StartNote() {
-        startActivity(new Intent(this, NoteActivity.class));
-        overridePendingTransition(R.anim.left_to_right, R.anim.right_to_left);
-        //finish();
-    }
-
     @Override
     protected void onResume() {
         super.onResume();
@@ -223,7 +214,7 @@ public class PhotoActivity extends AppCompatActivity
 
             activeCameraCapture();
 
-            tempFile = new File(result);
+            //File tempFile = new File(result);
 
             new Handler().postDelayed(new Runnable() {
                 @Override
@@ -355,7 +346,7 @@ public class PhotoActivity extends AppCompatActivity
             @Override
             public void onOrientationChanged(int iAngle) {
 
-                final int iLookup[] = {0, 0, 0, 90, 90, 90, 90, 90, 90, 180, 180, 180, 180, 180, 180, 270, 270, 270, 270, 270, 270, 0, 0, 0}; // 15-degree increments
+                final int[] iLookup = {0, 0, 0, 90, 90, 90, 90, 90, 90, 180, 180, 180, 180, 180, 180, 270, 270, 270, 270, 270, 270, 0, 0, 0}; // 15-degree increments
                 if (iAngle != ORIENTATION_UNKNOWN) {
 
                     int iNewOrientation = iLookup[iAngle / 15];
@@ -388,7 +379,7 @@ public class PhotoActivity extends AppCompatActivity
         imgSurface = findViewById(R.id.imgSurface);
         imgCapture = findViewById(R.id.imgCapture);
         imgFlashOnOff = findViewById(R.id.imgFlashOnOff);
-        imgSwipeCamera = findViewById(R.id.imgChangeCamera);
+        ImageView imgSwipeCamera = findViewById(R.id.imgChangeCamera);
 
 
         imgSwipeCamera.setOnClickListener(this);
@@ -592,7 +583,7 @@ public class PhotoActivity extends AppCompatActivity
             boolean check = imgFlashOnOff.isShown();
 
             // check if focus is enable
-            if(check == true) {
+            if(check) {
                 param.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);
                 camera.setParameters(param);
             }
@@ -658,7 +649,6 @@ public class PhotoActivity extends AppCompatActivity
 
         } catch (Exception e) {
             e.printStackTrace();
-            return;
         }
     }
 

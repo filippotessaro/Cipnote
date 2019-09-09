@@ -3,12 +3,9 @@ package com.cipnote.ui;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
-import android.app.Activity;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.app.FragmentManager;
-import android.app.ProgressDialog;
-import android.app.Service;
 import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.ContentValues;
@@ -26,7 +23,6 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.IBinder;
 import android.provider.CalendarContract;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -36,36 +32,6 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-
-import com.bumptech.glide.Glide;
-import com.cipnote.Calendar.RangeTimePickerDialog;
-import com.cipnote.UploadService.MyUploadService;
-import com.cipnote.camera.CameraPermissionActivity;
-import com.cipnote.camera.PhotoActivity;
-import com.cipnote.camera.RunTimePermission;
-import com.cipnote.data.CalendarEntity;
-import com.cipnote.data.ImageEntityData;
-import com.cipnote.data.NoteEntityData;
-import com.cipnote.data.TextEntityData;
-import com.cipnote.ui.adapter.ListAdapter;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.Query;
-import com.google.firebase.database.ValueEventListener;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.OnProgressListener;
-import com.google.firebase.storage.StorageReference;
-import com.google.firebase.storage.UploadTask;
-import com.sothree.slidinguppanel.SlidingUpPanelLayout;
-import com.transitionseverywhere.*;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.Html;
@@ -92,9 +58,49 @@ import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.cipnote.BuildConfig;
+import com.cipnote.Calendar.RangeTimePickerDialog;
+import com.cipnote.R;
+import com.cipnote.UploadService.MyUploadService;
+import com.cipnote.camera.CameraPermissionActivity;
+import com.cipnote.camera.PhotoActivity;
+import com.cipnote.camera.RunTimePermission;
+import com.cipnote.data.CalendarEntity;
+import com.cipnote.data.ImageEntityData;
+import com.cipnote.data.NoteEntityData;
+import com.cipnote.data.TextEntityData;
+import com.cipnote.ui.adapter.FontsAdapter;
+import com.cipnote.ui.adapter.ListAdapter;
+import com.cipnote.utils.FontProvider;
+import com.cipnote.viewmodel.Font;
+import com.cipnote.viewmodel.Layer;
+import com.cipnote.viewmodel.PaintView;
+import com.cipnote.viewmodel.TextLayer;
+import com.cipnote.widget.MotionView;
+import com.cipnote.widget.entity.ImageEntity;
+import com.cipnote.widget.entity.MotionEntity;
+import com.cipnote.widget.entity.TextEntity;
 import com.flask.colorpicker.ColorPickerView;
 import com.flask.colorpicker.builder.ColorPickerClickListener;
 import com.flask.colorpicker.builder.ColorPickerDialogBuilder;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
+import com.google.gson.JsonElement;
+import com.sothree.slidinguppanel.SlidingUpPanelLayout;
+import com.transitionseverywhere.Recolor;
+import com.transitionseverywhere.TransitionManager;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -105,26 +111,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
-import com.cipnote.BuildConfig;
-import com.cipnote.R;
-import com.cipnote.ui.adapter.FontsAdapter;
-import com.cipnote.utils.FontProvider;
-import com.cipnote.viewmodel.Font;
-import com.cipnote.viewmodel.Layer;
-import com.cipnote.viewmodel.PaintView;
-import com.cipnote.viewmodel.TextLayer;
-import com.cipnote.widget.MotionView;
-import com.cipnote.widget.entity.ImageEntity;
-import com.cipnote.widget.entity.MotionEntity;
-import com.cipnote.widget.entity.TextEntity;
-import com.transitionseverywhere.Recolor;
+
 import ai.api.AIListener;
 import ai.api.android.AIConfiguration;
 import ai.api.android.AIService;
 import ai.api.model.AIError;
 import ai.api.model.AIResponse;
 import ai.api.model.Result;
-import com.google.gson.JsonElement;
 
 
 public class NoteActivity extends AppCompatActivity
@@ -940,6 +933,7 @@ public class NoteActivity extends AppCompatActivity
                     Bitmap bitmap = BitmapFactory.decodeStream(fileInputStream);
                     Drawable drawable = new BitmapDrawable(getResources(), bitmap);
                     MainLayout.setBackground(drawable);
+                    //MainLayout.setForegroundGravity(crop);
 
                 } catch (FileNotFoundException e) {
                     e.printStackTrace();
@@ -1440,7 +1434,7 @@ public class NoteActivity extends AppCompatActivity
             text_date.setText(dateFormat.format(myCalendarStart.getTime()));
 
             checkBoxDay = alertLayoutCalendar.findViewById(R.id.cb_day);
-            if(checkbox == true) {
+            if(checkbox) {
                 checkBoxDay.setChecked(true);
                 layoutButtonTime.setVisibility(alertLayoutCalendar.INVISIBLE);
                 layoutTimeView.setVisibility(alertLayoutCalendar.INVISIBLE);
@@ -1534,7 +1528,7 @@ public class NoteActivity extends AppCompatActivity
                     else
                         check = true;
 
-                    if (check == true){
+                    if (check){
 
                         switch (s) {
                             case "a":

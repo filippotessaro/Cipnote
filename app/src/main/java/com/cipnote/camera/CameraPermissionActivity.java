@@ -16,7 +16,7 @@ import com.google.firebase.auth.FirebaseUser;
 public class CameraPermissionActivity extends AppCompatActivity {
 
     private RunTimePermission runTimePermission;
-    FirebaseAuth mAuth;
+    //FirebaseAuth mAuth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,8 +56,8 @@ public class CameraPermissionActivity extends AppCompatActivity {
 
     public void showAlertDialogButtonClicked() {
 
-        mAuth = FirebaseAuth.getInstance();
-        FirebaseUser user = mAuth.getCurrentUser();
+        //mAuth = FirebaseAuth.getInstance();
+        //FirebaseUser user = mAuth.getCurrentUser();
 
         String s = getString(R.string.letstart);
 
