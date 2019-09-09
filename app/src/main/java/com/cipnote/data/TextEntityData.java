@@ -86,29 +86,6 @@ public class TextEntityData implements Parcelable {
         this.scale = scale;
     }
 
-
-    protected TextEntityData(Parcel in) {
-        text = in.readString();
-        font = in.readString();
-        deg = in.readInt();
-        scale = in.readFloat();
-        color = in.readInt();
-    }
-
-    @Override
-    public int describeContents() {
-        return 0;
-    }
-
-    @Override
-    public void writeToParcel(Parcel dest, int flags) {
-        dest.writeString(text);
-        dest.writeString(font);
-        dest.writeInt(deg);
-        dest.writeFloat(scale);
-        dest.writeInt(color);
-    }
-
     public static final Parcelable.Creator<TextEntityData> CREATOR = new Parcelable.Creator<TextEntityData>() {
         @Override
         public TextEntityData createFromParcel(Parcel in) {
@@ -147,55 +124,4 @@ public class TextEntityData implements Parcelable {
         dest.writeInt(color);
     }
 
-    @SuppressWarnings("unused")
-    public static final Parcelable.Creator<TextEntityData> CREATOR = new Parcelable.Creator<TextEntityData>() {
-        @Override
-        public TextEntityData createFromParcel(Parcel in) {
-            return new TextEntityData(in);
-        }
-
-        @Override
-        public TextEntityData[] newArray(int size) {
-            return new TextEntityData[size];
-        }
-    };
-
-    protected TextEntityData(Parcel in) {
-        x = in.readFloat();
-        y = in.readFloat();
-        text = in.readString();
-        font = in.readString();
-        deg = in.readInt();
-        scale = in.readFloat();
-        color = in.readInt();
-    }
-
-    @Override
-    public int describeContents() {
-        return 0;
-    }
-
-    @Override
-    public void writeToParcel(Parcel dest, int flags) {
-        dest.writeFloat(x);
-        dest.writeFloat(y);
-        dest.writeString(text);
-        dest.writeString(font);
-        dest.writeInt(deg);
-        dest.writeFloat(scale);
-        dest.writeInt(color);
-    }
-
-    @SuppressWarnings("unused")
-    public static final Parcelable.Creator<TextEntityData> CREATOR = new Parcelable.Creator<TextEntityData>() {
-        @Override
-        public TextEntityData createFromParcel(Parcel in) {
-            return new TextEntityData(in);
-        }
-
-        @Override
-        public TextEntityData[] newArray(int size) {
-            return new TextEntityData[size];
-        }
-    };
 }

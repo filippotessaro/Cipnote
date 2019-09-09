@@ -128,26 +128,6 @@ public class CalendarEntity implements Parcelable {
         this.timeZone = timeZone;
     }
 
-    protected CalendarEntity(Parcel in) {
-        allDay = in.readInt();
-        calendarID = in.readInt();
-        timeZone = in.readString();
-        x = in.readFloat();
-    }
-
-    @Override
-    public int describeContents() {
-        return 0;
-    }
-
-    @Override
-    public void writeToParcel(Parcel dest, int flags) {
-        dest.writeInt(allDay);
-        dest.writeInt(calendarID);
-        dest.writeString(timeZone);
-        dest.writeFloat(x);
-    }
-
     @SuppressWarnings("unused")
     public static final Parcelable.Creator<CalendarEntity> CREATOR = new Parcelable.Creator<CalendarEntity>() {
         @Override
@@ -193,16 +173,4 @@ public class CalendarEntity implements Parcelable {
         dest.writeFloat(y);
     }
 
-    @SuppressWarnings("unused")
-    public static final Parcelable.Creator<CalendarEntity> CREATOR = new Parcelable.Creator<CalendarEntity>() {
-        @Override
-        public CalendarEntity createFromParcel(Parcel in) {
-            return new CalendarEntity(in);
-        }
-
-        @Override
-        public CalendarEntity[] newArray(int size) {
-            return new CalendarEntity[size];
-        }
-    };
 }

@@ -15,9 +15,6 @@
     sothree:umanoShadowHeight="0dp">
 
     <android.support.constraint.ConstraintLayout
-        xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
-        xmlns:tools="http://schemas.android.com/tools"
         android:id="@+id/activity_note"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -36,8 +33,8 @@
             android:elevation="1dp"
             android:src="@drawable/ic_delete_note_white_48dp"
             android:visibility="visible"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            sothree:layout_constraintEnd_toEndOf="parent"
+            sothree:layout_constraintTop_toTopOf="parent" />
 
         <ImageButton
             android:id="@+id/recordButton"
@@ -50,8 +47,8 @@
             android:background="@color/transparent"
             android:elevation="1dp"
             android:src="@drawable/ic_mic_black_24dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent" />
+            sothree:layout_constraintBottom_toBottomOf="parent"
+            sothree:layout_constraintStart_toStartOf="parent" />
 
         <ImageButton
             android:id="@+id/startCamera"
@@ -62,9 +59,9 @@
             android:background="@color/transparent"
             android:elevation="1dp"
             android:src="@drawable/ic_camera_white_48dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent" />
+            sothree:layout_constraintBottom_toBottomOf="parent"
+            sothree:layout_constraintEnd_toEndOf="parent"
+            sothree:layout_constraintStart_toStartOf="parent" />
 
         <!-- Contenitore di testi e ImageSticker -->
         <com.cipnote.widget.MotionView
@@ -138,21 +135,24 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:src="@drawable/ic_delete_black_24dp" />
+                android:src="@drawable/ic_delete_black_24dp"
+                android:contentDescription="TODO" />
 
             <ImageButton
                 android:id="@+id/paintView_stroke_size"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:src="@drawable/ic_plus_1" />
+                android:src="@drawable/ic_plus_1"
+                android:contentDescription="TODO" />
 
             <ImageButton
                 android:id="@+id/paintView_color_change"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:src="@drawable/ic_format_color_fill_black_24dp" />
+                android:src="@drawable/ic_format_color_fill_black_24dp"
+                android:contentDescription="TODO" />
 
 
             <ImageButton
@@ -160,7 +160,8 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:src="@drawable/ic_check_24dp" />
+                android:src="@drawable/ic_check_24dp"
+                android:contentDescription="TODO" />
 
         </LinearLayout>
 
@@ -168,18 +169,18 @@
         <LinearLayout
             android:id="@+id/vertical_menu_notes"
             android:layout_width="76dp"
-            android:layout_height="290dp"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentStart="true"
+            android:layout_height="200dp"
             android:layout_below="@+id/main_motion_text_entity_edit_panel"
-            android:layout_marginLeft="16dp"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentLeft="true"
             android:layout_marginStart="16dp"
+            android:layout_marginLeft="16dp"
             android:layout_marginTop="8dp"
             android:background="@drawable/card_item_menu"
             android:elevation="1dp"
             android:orientation="vertical"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/editTextTitle">
+            sothree:layout_constraintStart_toStartOf="parent"
+            sothree:layout_constraintTop_toBottomOf="@+id/editTextTitle">
 
             <ImageButton
                 android:id="@+id/add_draw"
@@ -203,7 +204,9 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:background="@color/transparent"
-                android:src="@drawable/ic_insert_emoticon_black_24dp" />
+                android:src="@drawable/ic_insert_emoticon_black_24dp"
+                android:visibility="gone"
+                tools:visibility="gone" />
 
             <!--<ImageButton-->
             <!--android:id="@+id/todoList"-->
@@ -220,7 +223,9 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:background="@color/transparent"
-                android:src="@drawable/ic_event_note" />
+                android:src="@drawable/ic_event_note"
+                android:visibility="gone"
+                tools:visibility="gone" />
 
             <ImageButton
                 android:id="@+id/change_background_color"
@@ -243,8 +248,8 @@
             android:elevation="1dp"
             android:text="@string/save"
             android:textColor="@color/darkGray"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
+            sothree:layout_constraintBottom_toBottomOf="parent"
+            sothree:layout_constraintEnd_toEndOf="parent" />
 
         <EditText
             android:id="@+id/editTextTitle"
@@ -264,8 +269,8 @@
             android:textColor="@color/white"
             android:textSize="24sp"
             android:textStyle="bold"
-            app:layout_constraintEnd_toStartOf="@+id/deleteNoteButton"
-            app:layout_constraintHorizontal_bias="0.0"
+            sothree:layout_constraintEnd_toStartOf="@+id/deleteNoteButton"
+            sothree:layout_constraintHorizontal_bias="0.0"
             sothree:layout_constraintEnd_toEndOf="parent"
             sothree:layout_constraintStart_toStartOf="parent"
             sothree:layout_constraintTop_toTopOf="parent" />
@@ -281,14 +286,13 @@
             android:layout_marginRight="8dp"
             android:layout_marginStart="8dp"
             android:visibility="gone"
-            app:layout_constraintBottom_toTopOf="@+id/startCamera"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent" />
+            sothree:layout_constraintBottom_toTopOf="@+id/startCamera"
+            sothree:layout_constraintEnd_toEndOf="parent"
+            sothree:layout_constraintStart_toStartOf="parent" />
 
     </android.support.constraint.ConstraintLayout>
 
-    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:tools="http://schemas.android.com/tools"
+    <LinearLayout
         android:id="@+id/dragView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -296,7 +300,8 @@
         android:clickable="true"
         android:elevation="2dp"
         android:focusable="false"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        >
 
         <RelativeLayout
             android:layout_width="match_parent"
@@ -312,8 +317,8 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_alignParentLeft="true"
-                    android:layout_marginTop="20dp"
                     android:layout_marginLeft="16dp"
+                    android:layout_marginTop="20dp"
                     android:layout_weight="1"
                     android:src="@drawable/ic_mode_edit" />
 
@@ -355,13 +360,6 @@
                     android:textSize="24sp"
                     android:visibility="gone" />
 
-                <TextView
-                    android:id="@+id/text_scroll_view"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/hint"
-                    android:textSize="24sp" />
-
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
@@ -373,6 +371,13 @@
                         android:layout_height="wrap_content" />
 
                 </LinearLayout>
+
+                <TextView
+                    android:id="@+id/text_scroll_view"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/hint"
+                    android:textSize="24sp" />
             </LinearLayout>
         </ScrollView>
     </LinearLayout>

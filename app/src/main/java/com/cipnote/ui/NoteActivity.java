@@ -1182,8 +1182,8 @@ public class NoteActivity extends AppCompatActivity
         int idImage = 0;
 
         //TODO upload of a draw
-        //String drawUrl = uploadDrawImage();
-        //n.setDrawUrl(drawUrl);
+        String drawUrl = uploadDrawImage();
+        n.setDrawUrl(drawUrl);
 
         for (int i = 0; i < l.size(); i++){
             if(l.get(i) instanceof TextEntity){

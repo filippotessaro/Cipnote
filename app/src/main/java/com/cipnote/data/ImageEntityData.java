@@ -22,13 +22,6 @@ public class ImageEntityData implements Parcelable {
         this.scale = scale;
     }
 
-    protected ImageEntityData(Parcel in) {
-        x = in.readFloat();
-        y = in.readFloat();
-        logo = in.readInt();
-        deg = in.readInt();
-        scale = in.readFloat();
-    }
 
     public static final Creator<ImageEntityData> CREATOR = new Creator<ImageEntityData>() {
         @Override
@@ -82,19 +75,6 @@ public class ImageEntityData implements Parcelable {
         this.scale = scale;
     }
 
-    @Override
-    public int describeContents() {
-        return 0;
-    }
-
-    @Override
-    public void writeToParcel(Parcel dest, int flags) {
-        dest.writeFloat(x);
-        dest.writeFloat(y);
-        dest.writeInt(logo);
-        dest.writeInt(deg);
-        dest.writeFloat(scale);
-    }
 
     protected ImageEntityData(Parcel in) {
         x = in.readFloat();
@@ -117,17 +97,4 @@ public class ImageEntityData implements Parcelable {
         dest.writeInt(deg);
         dest.writeFloat(scale);
     }
-
-    @SuppressWarnings("unused")
-    public static final Parcelable.Creator<ImageEntityData> CREATOR = new Parcelable.Creator<ImageEntityData>() {
-        @Override
-        public ImageEntityData createFromParcel(Parcel in) {
-            return new ImageEntityData(in);
-        }
-
-        @Override
-        public ImageEntityData[] newArray(int size) {
-            return new ImageEntityData[size];
-        }
-    };
 }
